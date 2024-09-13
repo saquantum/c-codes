@@ -2,17 +2,16 @@
 
 int main(){
     int i;
-    int num;
+    int num=0;
     double num1=0;
     double num2=0;
     
-    while(1){
+    while(num<=1){
         printf("%s","How many numbers do you wish to enter? ");
         scanf("%d",&num);
-        if(num>1){
-            break;
+        if(num<=1){
+            printf("the number of inputs must be greater than 1 to find a maximum\n");
         }
-        printf("the number of inputs must be greater than 1 to find a maximum\n");
     }
     
     printf("%s%d%s","Enter ", num," real numbers: ");
