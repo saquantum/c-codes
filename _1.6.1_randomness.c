@@ -1,7 +1,6 @@
 #include<stdio.h>
 #include<time.h>
 #include<stdlib.h>
-#define max 100
 
 int main(){
 	int r;
@@ -9,11 +8,11 @@ int main(){
 	int greater=0;
 	int i;
 	srand(time(NULL));
-	for (i=0;i<50000;i++){
-	    r=rand()%max;
-	    if (r<max/2){
+	for (i=0;i<500;i++){
+	    r=rand();
+	    if (r<RAND_MAX/2){
 	        less++;
-	    }else if(r>max/2){
+	    }else if(r>RAND_MAX/2){
 	        greater++;
 	    }
     }
