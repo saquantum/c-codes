@@ -9,8 +9,8 @@
 int main() {
     /* must initialise the value of err(error) to be big enough 
 	since there is a comparison in the loop */
-    double err = 4;
-    double approx = 0;
+    double err = 4.0;
+    double approx = 0.0;
 
     int x = 0;
     int y = 0;
