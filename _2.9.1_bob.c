@@ -8,6 +8,7 @@ bool is_prime(int n);
 void test();
 
 int main(){
+    test();
     int count=0;
     char a1;
     char a2;
@@ -77,7 +78,7 @@ void test(){
     assert(is_prime(15)==0);
     assert(is_prime(17)==1);
     assert(is_prime(29)==1);
-    assert(is_prime(57)==1);
+    assert(is_prime(57)==0);
     assert(is_prime(1987)==1);
 }
 
