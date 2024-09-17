@@ -5,6 +5,7 @@
 typedef enum bool{False,True} bool;
 bool isvowel(char c);
 bool is_prime(int n);
+void test();
 
 int main(){
     int count=0;
@@ -16,6 +17,9 @@ int main(){
         a1=c1;
         a3=a1;
         for (char c2='a';c2<='z';c2++){
+            /* Use xor to determine whether the first and second characters are different.
+            To determine whether we get a prime, first set 'a' to be 1 using 'a'-('a'-1) 
+            and the same procedure applies to other characters.*/
             if((isvowel(a1)^isvowel(c2))==True && is_prime(2*c1+c2-3*'a'+3)){
                 a2=c2;
                 count++;
@@ -47,6 +51,34 @@ bool is_prime(int n){
         }
     }
     return True;
+}
+
+void test(){
+    assert(isvowel('a')==1);
+    assert(isvowel('E')==1);
+    assert(isvowel('1')==0);
+    assert(isvowel('0')==0);
+    assert(isvowel('x')==0);
+    assert(isvowel('R')==0);
+    assert(isvowel('\n')==0);
+    assert(isvowel('\0')==0);
+
+    assert(is_prime(2)==1);
+    assert(is_prime(3)==1);
+    assert(is_prime(4)==0);
+    assert(is_prime(5)==1);
+    assert(is_prime(6)==0);
+    assert(is_prime(7)==1);
+    assert(is_prime(8)==0);
+    assert(is_prime(9)==0);
+    assert(is_prime(10)==0);
+    assert(is_prime(11)==1);
+    assert(is_prime(13)==1);
+    assert(is_prime(15)==0);
+    assert(is_prime(17)==1);
+    assert(is_prime(29)==1);
+    assert(is_prime(57)==1);
+    assert(is_prime(1987)==1);
 }
 
 
