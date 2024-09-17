@@ -7,19 +7,17 @@
 #define RADIUS 100
 
 int main() {
-	srand(time(NULL));
-	long count = 0;
-	long x = 0;
-	long y = 0;
+    srand(time(NULL));
+    int count = 0;
+    int x = 0;
+    int y = 0;
 	
-	for (int i = 0; i < LOOPS; i++) {
-		x = rand()%(RADIUS);
-		y = rand()%(RADIUS);
-		if (x!=0 && y!=0 && x * x + y * y <= RADIUS * RADIUS) {
-			count++;
-		}
-	}
-
-	printf("%lf", 4.0*(double)count / (double)LOOPS);
-
+    for (int i = 0; i < LOOPS; i++) {
+        x = rand()%(RADIUS);
+        y = rand()%(RADIUS);
+        if (x!=0 && y!=0 && x * x + y * y <= RADIUS * RADIUS) {
+            count++;
+        }
+    }
+    printf("pi is approxmately %lf", 4.0*(double)count / (double)LOOPS);
 }
