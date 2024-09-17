@@ -1,10 +1,9 @@
 #include<stdio.h>
-#include<ctype.h>
-
-#define DIFF 'a'-'A'
+#include<assert.h>
 
 typedef enum bool{False,True} bool;
 bool isvowel(char c);
+void test();
 
 int main(){
     int count=0;
@@ -41,4 +40,15 @@ bool isvowel(char c){
         return True;
     }
     return False;
+}
+
+void test(){
+    assert(isvowel('a')==1);
+    assert(isvowel('E')==1);
+    assert(isvowel('1')==0);
+    assert(isvowel('0')==0);
+    assert(isvowel('x')==0);
+    assert(isvowel('R')==0);
+    assert(isvowel('\n')==0);
+    assert(isvowel('\0')==0);
 }
