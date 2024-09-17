@@ -5,6 +5,7 @@
 
 int main() {
     double sum = 0;
+    // dn stands for denominator
     int dn = 1;
     int sign = 1;
 
