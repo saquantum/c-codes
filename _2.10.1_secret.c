@@ -20,7 +20,6 @@ int secret(int a){
         return (int)a+(int)(2*dist);
     }
     return a;
-    
 }
 
 void test(){
