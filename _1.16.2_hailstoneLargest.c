@@ -1,14 +1,14 @@
 #include<stdio.h>
-
-int hs(int n);
+#define LOOPS 10000000
+long hs(long n);
 
 int main(){
-    int i=1;
-    int max=1;
-    int num=0;
-    int temp=0;
+    long i=1;
+    long max=1;
+    long num=0;
+    long temp=0;
     
-    for(;i<10000;i++){
+    for(;i<LOOPS;i++){
         temp=hs(i);
         if (max<temp){
             max=temp;
@@ -20,8 +20,8 @@ int main(){
     return 0;
 }
 
-int hs(int n){
-    int max=0;
+long hs(long n){
+    long max=0;
     while(n!=1){
         if(n%2==1){
             n=3*n+1;
