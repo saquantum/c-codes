@@ -10,6 +10,7 @@ bool fibword_phi(int n);
 void test();
 
 int main(){
+    test();
     for(int i=1;i<LOOPS;i++){
         printf("%d",fibword_phi(i));
     }
