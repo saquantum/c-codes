@@ -1,7 +1,6 @@
 #include<stdio.h>
 #include<ctype.h>
-
-#define DIFF 'a'-'A'
+#include<assert.h>
 
 typedef enum bool{False,True} bool;
 bool isvowel(char c);
