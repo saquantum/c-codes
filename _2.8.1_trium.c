@@ -6,6 +6,7 @@ bool isvowel(char c);
 void test();
 
 int main(){
+    test();
     int count=0;
     char a1;
     char a2;
