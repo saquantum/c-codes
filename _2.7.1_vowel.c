@@ -7,6 +7,7 @@ bool isvowel(char c);
 void test();
 
 int main(){
+    test();
     char c;
     while((c=getchar())!=EOF){
         if (isvowel(c)){
