@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<ctype.h>
 #include<assert.h>
+#include<math.h>
 
 typedef enum bool{False,True} bool;
 bool isvowel(char c);
@@ -46,7 +47,7 @@ bool is_prime(int n){
     if (n<=2){
         return True;
     }
-    for(int i=2;i<n;i++){
+    for(int i=2;i<=floor(sqrt((double)n));i++){
         if (n%i==0){
             return False;
         }
@@ -81,5 +82,3 @@ void test(){
     assert(is_prime(57)==0);
     assert(is_prime(1987)==1);
 }
-
-
