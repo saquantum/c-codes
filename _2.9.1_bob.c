@@ -5,7 +5,7 @@
 
 typedef enum bool{False,True} bool;
 bool isvowel(char c);
-bool is_prime(int n);
+bool isprime(int n);
 void test();
 
 int main(){
@@ -22,7 +22,7 @@ int main(){
             /* Use xor to determine whether the first and second characters are different.
             To determine whether we get a prime, first set 'a' to be 1 using 'a'-('a'-1) 
             and the same procedure applies to other characters.*/
-            if((isvowel(a1)^isvowel(c2))==True && is_prime(2*c1+c2-3*'a'+3)){
+            if((isvowel(a1)^isvowel(c2))==True && isprime(2*c1+c2-3*'a'+3)){
                 a2=c2;
                 count++;
                 printf("%d %c%c%c ",count,a1,a2,a3);
@@ -43,7 +43,7 @@ bool isvowel(char c){
     return False;
 }
 
-bool is_prime(int n){
+bool isprime(int n){
     if (n<=2){
         return True;
     }
