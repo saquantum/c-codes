@@ -4,28 +4,26 @@
 #include<math.h>
 
 typedef enum bool{False,True} bool;
+
 bool isvowel(char c);
 bool isprime(int n);
+int let2num(char a);
 void test();
 
 int main(){
     test();
     int count=0;
-    char a1;
-    char a2;
-    char a3;
     
     for (char c1='a';c1<='z';c1++){
-        a1=c1;
-        a3=a1;
+
         for (char c2='a';c2<='z';c2++){
-            /* Use xor to determine whether the first and second characters are different.
-            To determine whether we get a prime, first set 'a' to be 1 using 'a'-('a'-1) 
-            and the same procedure applies to other characters.*/
-            if((isvowel(a1)^isvowel(c2))==True && isprime(2*c1+c2-3*'a'+3)){
-                a2=c2;
+            /* 
+               Use xor to determine whether the first and second characters are different.
+            */
+            if( (isvowel(c1)^isvowel(c2))==True \
+            && isprime(let2num(c1)+let2num(c2)+let2num(c1)) ){
                 count++;
-                printf("%d %c%c%c ",count,a1,a2,a3);
+                printf("%d %c%c%c ",count,c1,c2,c1);
             }
         }
     }
@@ -55,6 +53,16 @@ bool isprime(int n){
     return True;
 }
 
+int let2num(char a){
+    /* change lower case letters into number 
+       by the rule: 'a'->1, 'b'->2, ... 
+    */  
+    if (!(a>='a' && a<='z')){
+        return (int)a;
+    }
+    return a-'a'+1;
+}
+
 void test(){
     assert(isvowel('a')==1);
     assert(isvowel('E')==1);
@@ -65,20 +73,31 @@ void test(){
     assert(isvowel('\n')==0);
     assert(isvowel('\0')==0);
 
-    assert(is_prime(2)==1);
-    assert(is_prime(3)==1);
-    assert(is_prime(4)==0);
-    assert(is_prime(5)==1);
-    assert(is_prime(6)==0);
-    assert(is_prime(7)==1);
-    assert(is_prime(8)==0);
-    assert(is_prime(9)==0);
-    assert(is_prime(10)==0);
-    assert(is_prime(11)==1);
-    assert(is_prime(13)==1);
-    assert(is_prime(15)==0);
-    assert(is_prime(17)==1);
-    assert(is_prime(29)==1);
-    assert(is_prime(57)==0);
-    assert(is_prime(1987)==1);
+    assert(isprime(2)==1);
+    assert(isprime(3)==1);
+    assert(isprime(4)==0);
+    assert(isprime(5)==1);
+    assert(isprime(6)==0);
+    assert(isprime(7)==1);
+    assert(isprime(8)==0);
+    assert(isprime(9)==0);
+    assert(isprime(10)==0);
+    assert(isprime(11)==1);
+    assert(isprime(13)==1);
+    assert(isprime(15)==0);
+    assert(isprime(17)==1);
+    assert(isprime(29)==1);
+    assert(isprime(57)==0);
+    assert(isprime(1987)==1);
+
+    assert(let2num('a')==1);
+    assert(let2num('b')==2);
+    assert(let2num('c')==3);
+    assert(let2num('x')==24);
+    assert(let2num('y')==25);
+    assert(let2num('z')==26);
+    assert(let2num('\n')==(int)'\n');
+    assert(let2num('A')==(int)'A');
+    assert(let2num('6')==(int)'6');
+    assert(let2num('\\')=='\\');
 }
