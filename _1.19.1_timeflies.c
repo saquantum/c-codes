@@ -15,7 +15,7 @@ int main(){
     assert(m1>=0 && m2>=0 && m1<60 && m2<60);
     h=timediff(h1,m1,h2,m2)/60;
     m=timediff(h1,m1,h2,m2)%60;
-    printf("difference is %d:%d\n",h,m);
+    printf("difference is %02d:%02d\n",h,m);
     return 0;
 }
 
