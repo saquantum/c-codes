@@ -20,6 +20,9 @@ int main(){
             validInput = True; 
         } else {
             printf("Wrong input, try again\n");
+            /* This method, using getchar to clear buffer of scanf, comes from
+               https://www.geeksforgeeks.org/clearing-the-input-buffer-in-cc/
+                */
             while (getchar() != '\n'); // Clear the buffer
         }
     }
