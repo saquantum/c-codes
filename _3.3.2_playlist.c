@@ -9,14 +9,11 @@ void shuffle(int n, int arr[]);
 void printarray(int length,int arr[]);
 
 int main(){
-
-    int* p = (int*)malloc(sizeof(int));
     int length=0;
     int validInput = False; 
     while (!validInput) {
         printf("Enter a number: ");
         if (scanf("%d", &length) == 1 && length>=0) {
-            *p = length; 
             validInput = True; 
         } else {
             printf("Wrong input, try again\n");
