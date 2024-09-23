@@ -42,7 +42,7 @@ bool fibword_subs(int n){
             i++;
         }
     }
-    return arr[n-1];
+    return (bool)arr[n-1];
 }
 
 bool fibword_phi(int n){
