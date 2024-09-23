@@ -3,15 +3,17 @@
 #include<math.h>
 #include<stdbool.h>
 
-#define PHI 1.61803398875
+#define PHI 1.61803
 
 bool fibword_subs(int n);
 bool fibword_phi(int n);
 
 int main(){
-    for(int i=0;i<30;i++){
-    printf("%d ", fibword_subs(i+1)==fibword_phi(i+1));}
-    printf("\n");
+    int i=1;
+    while(fibword_subs(i)==fibword_phi(i)){
+        i++;
+    }
+    printf("the %dth digit went wrong\n",i);
 }
 
 
