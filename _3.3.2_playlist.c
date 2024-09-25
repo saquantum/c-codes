@@ -3,6 +3,8 @@
 #include<time.h>
 #include<assert.h>
 
+#define MAXSIZE 1000
+
 typedef enum bool{False,True}bool;
 
 void shuffle(int n, int arr[]);
@@ -24,7 +26,7 @@ int main(){
         }
     }
     
-    int arr[length];
+    int arr[MAXSIZE];
     
     shuffle(length,arr);
     
