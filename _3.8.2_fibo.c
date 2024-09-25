@@ -3,7 +3,7 @@
 #include<math.h>
 #include<stdbool.h>
 
-#define MAXSIZE 1000
+#define MAXSIZE 10000
 #define PHI 1.61803
 
 bool fibword_subs(int n);
@@ -11,8 +11,11 @@ bool fibword_phi(int n);
 
 int main(){
     int i=1;
-    while(fibword_subs(i)==fibword_phi(i)){
+    while(fibword_subs(i)==fibword_phi(i) && i<MAXSIZE){
         i++;
+    }
+    if (i>=MAXSIZE){
+        printf("the loop could not find a wrong digit within the max size\n");
     }
     printf("the %dth digit went wrong\n",i);
 }
