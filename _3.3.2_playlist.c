@@ -15,7 +15,7 @@ int main(){
     int validInput = False; 
     while (!validInput) {
         printf("Enter a number: ");
-        if (scanf("%d", &length) == 1 && length>=0) {
+        if (scanf("%d", &length) == 1 && length>=0 && length<=MAXSIZE) {
             validInput = True; 
         } else {
             printf("Wrong input, try again\n");
