@@ -5,7 +5,7 @@
 #include<string.h>
 
 #define PHI 1.61803
-#define MAXSIZE 1000
+#define MAXSIZE 10000
 
 bool fibword_subs(int n);
 bool fibword_phi(int n);
@@ -46,15 +46,9 @@ bool fibword_subs(int n){
         printf("wrong input, the function will return a 0.");
         return false;
     }
-    int length=n+4;
-    int arr[length];
-    int i;
-    for(i=0;i<length;i++){
-        arr[i]=0;
-    }
-    
+    int arr[MAXSIZE]={0};
+    int i=0;
     int count=1;
-    i=0;
     
     while(count<n){
         if(arr[i]==0){
