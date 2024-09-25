@@ -36,11 +36,8 @@ void strmerge(const char s1[], const char s2[], char s3[]) {
 	initarray(s3, MAXSIZE);
 
 	char o1[MAXSIZE];
-	initarray(o1, MAXSIZE);
 	char o2[MAXSIZE];
-	initarray(o2, MAXSIZE);
 	char o3[MAXSIZE];
-	initarray(o3, MAXSIZE);
 
 	int index = overlap(s1, s2);
 
@@ -54,9 +51,8 @@ void strmerge(const char s1[], const char s2[], char s3[]) {
 		substring(s1, index, strlen(s1), o2);
 		substring(s2, len1 - index, strlen(s2), o3);
 	}
-	
-
-	int i = 0;
+	// merge the 3 pieces (o1, o2, o3) into 1 string (s3)
+    int i = 0;
 	while (o1[i] != '\0') {
 		s3[i] = o1[i];
 		i++;
@@ -77,9 +73,7 @@ int overlap(const char s1[], const char s2[]) {
 	int len2 = strlen(s2);
 	int min = len1 < len2 ? len1 : len2;
 	char temp1[MAXSIZE];
-	initarray(temp1, MAXSIZE);
 	char temp2[MAXSIZE];
-	initarray(temp2, MAXSIZE);
 
 	for (int i = 0; i < min; i++) {
 		substring(s1, len1 - min + i, len1 - 1, temp1);
@@ -99,7 +93,7 @@ void substring(const char s[], int index1, int index2, char out[]) {
 	for (i = 0; i <= index2 - index1; i++) {
 		out[i] = s[i + index1];
 	}
-	out[i + 1] = '\0';
+	out[i] = '\0';
 }
 
 void initarray(char s[], int len) {
