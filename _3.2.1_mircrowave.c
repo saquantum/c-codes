@@ -1,7 +1,9 @@
 #include<stdio.h>
 #include<assert.h>
 int buttons(int seconds);
+void test();
 int main() {
+    test();
     printf("%d",buttons(25));
     return 0;
 }
@@ -15,4 +17,9 @@ int buttons(int seconds) {
         seconds -= (seconds / arr[i]) * arr[i];
     }
     return sum;
+}
+void test(){
+    assert(buttons(705)==7);
+    assert(buttons(25)==3);
+    
 }
