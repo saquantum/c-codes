@@ -25,7 +25,6 @@ void soundex(const char s[],char out[MAXSIZE]) {
 	out[0] = toupper(s[0]);
 	int i = 1;
 	int pos = 1;
-	int len = strlen(s);
 	while (s[i] != '\0' && pos<4) {
 		if (i - 1 >= 0 && let2code(s[i - 1])== let2code(s[i])) { //skip
 		}
