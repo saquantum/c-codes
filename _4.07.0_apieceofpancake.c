@@ -4,7 +4,7 @@
 #include<time.h>
 #include<stdlib.h>
 
-#define MAX_ITERATIONS 10
+#define MAX_ITERATIONS 250
 #define GRID_SIZE 50
 #define RED  "\x1B[31m"
 #define NRM  "\x1B[0m"
@@ -39,6 +39,7 @@ int main(){
                 printf("%s0 ",NRM);
             }
 	    }
+	    printf("\n");
 	}
 }
 
@@ -46,7 +47,7 @@ void iteration(int* ptr, bool grid[GRID_SIZE][GRID_SIZE], cell pos[MAX_ITERATION
     /* the pointer refers to the current living cells, or the total number of iterations
        the eligible length of pos must be *ptr */
     int r;
-    while((r=rand()/(*ptr))+1 && !stick(pos[r].x, pos[r].y, ptr, grid, pos));
+    while((r=rand()%(*ptr))+1 && !stick(pos[r].x, pos[r].y, ptr, grid, pos));
     
 }
 
@@ -54,7 +55,7 @@ bool stick(int x, int y, int* ptr, bool grid[GRID_SIZE][GRID_SIZE], cell pos[MAX
     /* the input x and y refers to a currently existing cell 
        and we try to stick a new cell to a random existing cell, 
        if fails then do nothing */
-    int adjacent4[4]={grid[x-1][y-1], grid[x-1][y+1], grid[x+1][y-1], grid[x+1][y+1]};
+    int adjacent4[4]={grid[x-1][y], grid[x+1][y], grid[x][y-1], grid[x][y+1]};
     int sum=0;
     int i;
     for(i=0;i<4;i++){
@@ -72,8 +73,19 @@ bool stick(int x, int y, int* ptr, bool grid[GRID_SIZE][GRID_SIZE], cell pos[MAX
     while(adjacent4[i]){
         i=rand()%4;
     }
-    newx=(i/2)%2==0?x-1:x+1;
-    newy=i%2==0?y-1:y+1;
+    if(i==0){
+        newx=x-1;
+        newy=y;
+    }else if(i==1){
+        newx=x+1;
+        newy=y;
+    }else if(i==2){
+        newx=x;
+        newy=y-1;
+    }else{
+        newx=x;
+        newy=y+1;
+    }
     
     grid[newx][newy]=1;
     newcell.x=newx;
