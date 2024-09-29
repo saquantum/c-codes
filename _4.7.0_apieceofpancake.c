@@ -26,7 +26,7 @@ int main(){
 	newcell.x=25;
 	newcell.y=25;
 	pos[0]=newcell;
-    int N=1;
+    	int N=1;
 	for (int i=0;i<MAX_ITERATIONS;i++){
 	    iteration(&N, grid, pos);
 	}
