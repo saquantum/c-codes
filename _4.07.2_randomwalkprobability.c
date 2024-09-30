@@ -19,7 +19,7 @@ bool adjacent(int x, int y, bool grid[GRID_SIZE][GRID_SIZE]);
 int main(){
 	srand(time(NULL));
 	bool grid[GRID_SIZE][GRID_SIZE]={0};
-	grid[X0][Y0]=1;
+	grid[Y0][X0]=1;
 	
 	for (int i=0;i<MAX_ITERATIONS;i++){
 	    random_walk_iteration(grid);
@@ -27,7 +27,7 @@ int main(){
 	
 	for(int j=0;j<GRID_SIZE;j++){
 	    for(int i=0;i<GRID_SIZE;i++){
-	        if (grid[i][j]==1) {
+	        if (grid[j][i]==1) {
                 printf("%s1 ",RED);
             }
             else {
@@ -41,12 +41,12 @@ int main(){
 void random_walk_iteration(bool grid[GRID_SIZE][GRID_SIZE]){
     int x0,y0;
     // find an unoccupied cell
-    while(grid[x0=rand()%GRID_SIZE][y0=rand()%GRID_SIZE]);
+    while(grid[y0=rand()%GRID_SIZE][x0=rand()%GRID_SIZE]);
     // and begin random walk
     while(!adjacent(x0,y0,grid) || rand()>RAND_MAX*PS){
         random_walk(&x0,&y0);
     }
-    grid[x0][y0]=1;
+    grid[y0][x0]=1;
 }
 void random_walk(int* px, int* py){
     int r;
@@ -66,10 +66,10 @@ void random_walk(int* px, int* py){
     }
 }
 bool adjacent(int x, int y, bool grid[GRID_SIZE][GRID_SIZE]){
-    bool mid=(grid[x][y]==1);
-    bool left=(grid[x-1>=0?x-1:GRID_SIZE-1][y]==1);
-    bool right=(grid[x+1<=GRID_SIZE-1?x+1:0][y]==1);
-    bool up=(grid[x][y+1<=GRID_SIZE-1?y+1:0]==1);
-    bool down=(grid[x][y-1>=0?y-1:GRID_SIZE-1]==1);
+    bool mid=(grid[y][x]==1);
+    bool left=(grid[y][x-1>=0?x-1:GRID_SIZE-1]==1);
+    bool right=(grid[y][x+1<=GRID_SIZE-1?x+1:0]==1);
+    bool up=(grid[y+1<=GRID_SIZE-1?y+1:0][x]==1);
+    bool down=(grid[y-1>=0?y-1:GRID_SIZE-1][x]==1);
     return mid || left || right || up || down;
 }
