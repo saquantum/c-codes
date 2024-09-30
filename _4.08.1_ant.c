@@ -37,7 +37,7 @@ int main(){
         
         for(int j=0;j<GRID_SIZE;j++){
 	    for(int i=0;i<GRID_SIZE;i++){
-	        if (grid[i][j]==1) {
+	        if (grid[j][i]==1) {
                 printf("%s1 ",RED);
             }
             else {
@@ -54,15 +54,15 @@ int main(){
 void iteration(block* prev, block* now, block* next, bool grid[GRID_SIZE][GRID_SIZE]){
     if(now->x-prev->x==-1 && now->y-prev->y==0){ //leftward, now0->up, now1->down
         next->x=now->x;
-        next->y=!grid[now->x][now->y]?now->y+1:now->y-1;
+        next->y=!grid[now->y][now->x]?now->y+1:now->y-1;
     }else if(now->x-prev->x==1 && now->y-prev->y==0){ //rightward, now0->down, now1->up
         next->x=now->x;
-        next->y=!grid[now->x][now->y]?now->y-1:now->y+1;
+        next->y=!grid[now->y][now->x]?now->y-1:now->y+1;
     }else if(now->x-prev->x==0 && now->y-prev->y==1){ //upward, now0->right, now1->left
-        next->x=!grid[now->x][now->y]?now->x+1:now->x-1;
+        next->x=!grid[now->y][now->x]?now->x+1:now->x-1;
         next->y=now->y;
     }else if(now->x-prev->x==0 && now->y-prev->y==-1){ //downward, now0->left, now1->right
-        next->x=!grid[now->x][now->y]?now->x-1:now->x+1;
+        next->x=!grid[now->y][now->x]?now->x-1:now->x+1;
         next->y=now->y;
     }else if(now->x-prev->x==0 && now->y-prev->y==0){ // choose a random direction
         next->x=now->x+1;
@@ -71,5 +71,5 @@ void iteration(block* prev, block* now, block* next, bool grid[GRID_SIZE][GRID_S
         printf("something went wrong.\n");
         exit(1);
     }
-    grid[now->x][now->y]=!grid[now->x][now->y];
+    grid[now->y][now->x]=!grid[now->y][now->x];
 }
