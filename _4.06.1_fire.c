@@ -1,46 +1,147 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <windows.h> // For Sleep
-#include <time.h>    // For time functions
+#include<stdio.h>
+#include<assert.h>
+#include<unistd.h>
+#include<stdbool.h>
+#include<stdlib.h>
+#include<time.h>
 
-#define ROWS 10
-#define COLS 10
+#define ROWS 30
+#define COLS 80
 
-// Function to print the 2D array
-void printArray(char array[ROWS][COLS]) {
-    // Move the cursor to the top-left corner of the terminal
-    printf("\033[H\033[J"); // Clear the screen
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            printf("%c ", array[i][j]);
+#define MAX_ITERATIONS 1000
+
+#define GRN  "\x1B[32m"
+#define RED  "\x1B[31m"
+#define NRM  "\x1B[0m"
+
+bool probability(double p);
+void randomise(char grid[ROWS][COLS],double p_tree);
+void printgrid(char grid[ROWS][COLS]);
+void setempty(char grid[ROWS][COLS],char temp[ROWS][COLS]);
+void setfire_fire(char grid[ROWS][COLS],char temp[ROWS][COLS]);
+void setfire_lightning(char grid[ROWS][COLS],char temp[ROWS][COLS],double p);
+void grows(char grid[ROWS][COLS],char temp[ROWS][COLS],double p);
+void copy(char dest[ROWS][COLS], char source[ROWS][COLS]);
+void normal(char grid[ROWS][COLS],char temp[ROWS][COLS]);
+
+int main(){
+    srand(time(NULL));
+    char grid[ROWS][COLS];
+    char temp[ROWS][COLS]={0};
+    randomise(grid,1);
+    for(int i=0;i<MAX_ITERATIONS;i++){
+        printgrid(grid);
+        setempty(grid,temp);
+        setfire_fire(grid,temp);
+        setfire_lightning(grid,temp,1.0/2500.0);
+        grows(grid,temp,1.0/250.0);
+        normal(grid,temp);
+        copy(grid,temp);
+        usleep(20000);
+    } 
+} 
+
+void copy(char dest[ROWS][COLS], char source[ROWS][COLS]){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            dest[j][i]=source[j][i];
         }
-        printf("\n");
     }
 }
 
-int main() {
-    char array[ROWS][COLS];
-
-    // Initialize the array
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            array[i][j] = '.'; // Fill with dots
+void setempty(char grid[ROWS][COLS],char temp[ROWS][COLS]){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            if (grid[j][i]=='*'){
+                temp[j][i]=' ';
+            }
+        }
+    } 
+}
+void setfire_fire(char grid[ROWS][COLS],char temp[ROWS][COLS]){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            if (grid[j][i]=='*'){
+                for(int l=-1;l<=1;l++){
+                    for(int k=-1;k<=1;k++){
+                        bool inbound=!(k==0&&l==0) && 0<=i+k && i+k<COLS && 0<=j+l && j+l<ROWS;
+                        if (inbound && grid[j+l][i+k]=='@'){
+                            temp[j+l][i+k]='*';
+                        }
+                    }
+                }
+            }
         }
     }
-
-    // Simulate some dynamic changes in the array
-    for (int iteration = 0; iteration < 20; iteration++) {
-        // Randomly change some cells in the array
-        int x = rand() % ROWS;
-        int y = rand() % COLS;
-        array[x][y] = (array[x][y] == '.') ? 'X' : '.'; // Toggle between 'X' and '.'
-
-        // Print the updated array
-        printArray(array);
-
-        // Sleep for 500 milliseconds
-        Sleep(500);
+}
+void setfire_lightning(char grid[ROWS][COLS],char temp[ROWS][COLS],double p){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            if (grid[j][i]=='@' && probability(p)){
+                temp[j][i]='*';
+            }
+        }
     }
+}
+void grows(char grid[ROWS][COLS],char temp[ROWS][COLS],double p){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            if (grid[j][i]==' ' && probability(p)){
+                temp[j][i]='@';
+            }
+        }
+    }
+}
 
-    return 0;
+void normal(char grid[ROWS][COLS],char temp[ROWS][COLS]){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            if (temp[j][i]=='\0' && grid[j][i]=='@'){
+                temp[j][i]='@';
+            }
+            if (temp[j][i]=='\0' && grid[j][i]==' '){
+                temp[j][i]=' ';
+            }
+        }
+    }
+}
+
+bool probability(double p){
+    if(p<0.0 || p>1.0){
+        return false;
+    }
+    int r=rand();
+    if((double)r/(double)RAND_MAX>p){
+        return false;
+    }
+    return true;
+}
+
+void randomise(char grid[ROWS][COLS],double p_tree){
+    for(int j=0;j<ROWS;j++){
+        for(int i=0;i<COLS;i++){
+            if (probability(p_tree)){
+                grid[j][i]='@';
+            }else{
+                grid[j][i]=' ';
+            }
+        }
+    }
+}
+
+void printgrid(char grid[ROWS][COLS]) {
+    printf("\033[H\033[J");
+    for (int j = 0; j < ROWS; j++) {
+        for (int i = 0; i < COLS; i++) {
+            if (grid[j][i] == '*') {
+                printf("%s%c ", RED, '*');
+            }else if (grid[j][i] =='@') {
+                printf("%s%c ",GRN,'@');
+            }else {
+                printf("%s%c ", NRM, grid[j][i]);
+            }
+        }
+        printf("%s\n", NRM);
+    }
+    printf("%s\n", NRM);
 }
