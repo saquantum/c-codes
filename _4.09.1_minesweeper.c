@@ -3,9 +3,10 @@
 #include<stdbool.h>
 #include<time.h>
 #include<stdlib.h>
+//#include<unistd.h>
 
 #define GRID_SIZE 20
-#define MINES 100
+#define MINES 200
 #define RED  "\x1B[31m"
 #define NRM  "\x1B[0m"
 
@@ -23,7 +24,7 @@ int main() {
     char grid[GRID_SIZE][GRID_SIZE] = { 0 };
     srand(time(NULL));
     random_initialise_grid(MINES, grid);
-   // printboard(grid);
+    //printboard(grid);
 
     char board[GRID_SIZE][GRID_SIZE] = { 0 };
 
@@ -31,21 +32,33 @@ int main() {
     int clicks = 0;
     while (!win(grid, board)) {
         weightedclick(grid, board);
+        printboard(board);
+        printf("clicked\n");
+        usleep(1000000);
         bool flag0 = false;
         bool flag1 = false;
         bool flag2 = false;
-        do{
-            if (flag0 = span(grid, board)) {
+        do{ 
+            flag0 = span(grid, board);
+            flag1 = rule1(mines, board);
+            flag2 = rule2(&mines, board);
+            if (flag0) {
                 printboard(board);
-                Sleep(500);
+                printf("span\n");
+                //usleep(1000000);
+                Sleep(1000);
             }
-            if (flag2 = rule2(&mines, board)) {
+            if (flag2) {
                 printboard(board);
-                Sleep(500);
+                printf("rule1\n");
+                //usleep(1000000);
+                Sleep(1000);
             }
-            if (flag1 = rule1(mines, board)) {
+            if (flag1) {
                 printboard(board);
-                Sleep(500);
+                printf("rule2\n");
+                //usleep(1000000);
+                Sleep(1000);
             }
         } while (flag0 || flag1 || flag2);
     }
@@ -70,7 +83,8 @@ void randomclick(char grid[GRID_SIZE][GRID_SIZE], char board[GRID_SIZE][GRID_SIZ
 }
 
 void weightedclick(char grid[GRID_SIZE][GRID_SIZE], char board[GRID_SIZE][GRID_SIZE]) {
-    int x, y;
+    int x=0;
+    int y=0;
     int weight = 8 * 8 + 1; // the highest possible weight plus one
     int temp = 0;
     for (int i = 0; i < GRID_SIZE; i++) {
@@ -172,7 +186,8 @@ bool span(char grid[GRID_SIZE][GRID_SIZE], char board[GRID_SIZE][GRID_SIZE]) {
 }
 
 void random_initialise_grid(int mines, char grid[GRID_SIZE][GRID_SIZE]) {
-    int x, y;
+    int x=0;
+    int y=0;
     while (mines > 0) {
         x = rand() % GRID_SIZE;
         y = rand() % GRID_SIZE;
