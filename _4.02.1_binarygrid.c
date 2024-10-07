@@ -14,6 +14,8 @@
 #define ONE  '1'
 #define ZERO '0'
 #define BOARDSTR (MAX*MAX+1)
+#define MAX_TOLERANCE 0.001
+#define ESCAPELOOP 1000
 
 struct board {
    char b2d[MAX][MAX];
@@ -49,29 +51,28 @@ int main(void)
     board2str(str, &b);
     assert(strcmp(str, "101010100101010011011010101100010101")==0);
     printf("%s\n",str);
-   
-   return 0;
+    
+    return 0;
 }
 
 bool str2board(board* brd, char* str){
+    // edge cases
     if(str==NULL){
         return false;
     }
     if(strlen(str)<=0){
         return false;
     }
-    int sz=(int)round(sqrt((double)strlen(str)));
-    if(fabs( pow((double)sz,2.0) - (double)strlen(str) )>0.001){
+    
+    double sz_f=sqrt((double)strlen(str));
+    // the size of the board must be an integer
+    if( (fabs(sz_f-floor(sz_f)))>MAX_TOLERANCE || (fabs(sz_f-ceil(sz_f)))>MAX_TOLERANCE){
         return false;
     }
+    int sz=(int)round(sz_f);
+    // the size of the board must be an even number to satisfy the counting rule
     if(sz%2!=0){
         return false;
-    }
-    
-    for(int j=0;j<MAX;j++){
-        for(int i=0;i<MAX;i++){
-            brd->b2d[j][i]=0;
-        }
     }
     brd->sz=sz;
     for(int j=0;j<sz;j++){
@@ -83,48 +84,72 @@ bool str2board(board* brd, char* str){
 }
 
 void board2str(char* str, board* brd){
-    for(int i=0;i<BOARDSTR;i++){
-        str[i]=0;
+    int N=brd->sz;
+    // edge cases
+    if (N==0){
+        str[0]='\0';
+        return;
     }
-    for(int j=0;j<brd->sz;j++){
-        for(int i=0;i<brd->sz;i++){
-            *(str+j*brd->sz+i)=brd->b2d[j][i];
+    /* clear the string in O(N) time, or we could use 
+       *(str+N*N)='\0' at the end of this function,
+       which is not extremely clear but in O(1) time*/
+    for(int i=0;i<BOARDSTR;i++){
+        str[i]='\0';
+    }
+    for(int j=0;j<N;j++){
+        for(int i=0;i<N;i++){
+            *(str+j*N+i)=brd->b2d[j][i];
         }
     }
 }
 
 bool solve_board(board* brd){
-    while(pairs(brd) || oxo(brd) || counting(brd));
+    int i=0;
+    while((pairs(brd) || oxo(brd) || counting(brd)) && i<ESCAPELOOP){
+        i++;
+    }
+    if (i>=ESCAPELOOP){
+        printf("Seems we've encountered an infinite loop and failed to solve the board.\n");
+        return false;
+    }
+    // win condition
     for(int j=0;j<brd->sz;j++){
         for(int i=0;i<brd->sz;i++){
-            if(brd->b2d[j][i]=='.'){
+            if(brd->b2d[j][i]==UNK){
                 return false;
             }
         }
     }
     return true;
 }
+
 bool pairs(board* brd){
     bool flag=false;
-    for(int j=0;j<brd->sz;j++){
-        for(int i=0;i<brd->sz;i++){
-            if(i+1<brd->sz && brd->b2d[j][i]!='.' && brd->b2d[j][i]==brd->b2d[j][i+1]){
-                if (0<=i-1 && brd->b2d[j][i-1]=='.'){
-                    brd->b2d[j][i-1]=brd->b2d[j][i]=='1'?'0':'1';
+    int sz=brd->sz;
+    for(int j=0;j<sz;j++){
+        for(int i=0;i<sz;i++){
+            /* for every cell, make sure no ArrayOutOfBounds: 0<=i-1, i+1<sz;
+               and the current cell is not unoccupied: brd->b2d[j][i]!=UNK;
+               and the adjacent two cells are the same. */
+            if(i+1<sz && brd->b2d[j][i]!=UNK && brd->b2d[j][i]==brd->b2d[j][i+1]){ 
+                // before the two cells
+                if (0<=i-1 && brd->b2d[j][i-1]==UNK){
+                    brd->b2d[j][i-1]=brd->b2d[j][i]==ONE?ZERO:ONE;
                     flag=true;
                 }
-                if (i+2<brd->sz && brd->b2d[j][i+2]=='.'){
-                    brd->b2d[j][i+2]=brd->b2d[j][i]=='1'?'0':'1';
+                // after the two cells
+                if (i+2<sz && brd->b2d[j][i+2]==UNK){
+                    brd->b2d[j][i+2]=brd->b2d[j][i]==ONE?ZERO:ONE;
                     flag=true;
                 }
             }
-            if(j+1<brd->sz && brd->b2d[j][i]!='.' && brd->b2d[j][i]==brd->b2d[j+1][i]){
-                if (0<=j-1 && brd->b2d[j-1][i]=='.'){
-                    brd->b2d[j-1][i]=brd->b2d[j][i]=='1'?'0':'1';
+            if(j+1<sz && brd->b2d[j][i]!=UNK && brd->b2d[j][i]==brd->b2d[j+1][i]){
+                if (0<=j-1 && brd->b2d[j-1][i]==UNK){
+                    brd->b2d[j-1][i]=brd->b2d[j][i]==ONE?ZERO:ONE;
                     flag=true;
                 }
-                if (j+2<brd->sz && brd->b2d[j+2][i]=='.'){
-                    brd->b2d[j+2][i]=brd->b2d[j][i]=='1'?'0':'1';
+                if (j+2<sz && brd->b2d[j+2][i]==UNK){
+                    brd->b2d[j+2][i]=brd->b2d[j][i]==ONE?ZERO:ONE;
                     flag=true;
                 }
             }
@@ -132,70 +157,73 @@ bool pairs(board* brd){
     }
     return flag;
 }
+
 bool oxo(board* brd){
     bool flag=false;
-    for(int j=0;j<brd->sz;j++){
-        for(int i=0;i<brd->sz;i++){
-            if(i+2<brd->sz && brd->b2d[j][i]!='.' && brd->b2d[j][i]==brd->b2d[j][i+2] \
-               && brd->b2d[j][i+1]=='.'){
-                brd->b2d[j][i+1]=brd->b2d[j][i]=='1'?'0':'1';
+    int sz=brd->sz;
+    for(int j=0;j<sz;j++){
+        for(int i=0;i<sz;i++){
+            if(i+2<sz && brd->b2d[j][i]!=UNK && brd->b2d[j][i]==brd->b2d[j][i+2] \
+               && brd->b2d[j][i+1]==UNK){
+                brd->b2d[j][i+1]=brd->b2d[j][i]==ONE?ZERO:ONE;
                 flag=true;
             }
-            if(j+2<brd->sz && brd->b2d[j][i]!='.' && brd->b2d[j][i]==brd->b2d[j+2][i] \
-               && brd->b2d[j+1][i]=='.'){
-                brd->b2d[j+1][i]=brd->b2d[j][i]=='1'?'0':'1';
+            if(j+2<sz && brd->b2d[j][i]!=UNK && brd->b2d[j][i]==brd->b2d[j+2][i] \
+               && brd->b2d[j+1][i]==UNK){
+                brd->b2d[j+1][i]=brd->b2d[j][i]==ONE?ZERO:ONE;
                 flag=true;
             }
         }
     }
     return flag;
 }
+
 bool counting(board* brd){
     bool flag=false;
-    
-    for(int j=0;j<brd->sz;j++){
+    int sz=brd->sz;
+    for(int j=0;j<sz;j++){
         int count0=0;
         int count1=0;
-        for(int i=0;i<brd->sz;i++){
-            if(brd->b2d[j][i]=='0'){
+        // count rows
+        for(int i=0;i<sz;i++){
+            if(brd->b2d[j][i]==ZERO){
                 count0++;
             }
-            if(brd->b2d[j][i]=='1'){
+            if(brd->b2d[j][i]==ONE){
                 count1++;
             }
         }
-        if( (count0==brd->sz/2 || count1==brd->sz/2) && count0+count1<brd->sz){
-            for(int i=0;i<brd->sz;i++){
-                if(brd->b2d[j][i]=='.'){
-                    brd->b2d[j][i]=count1==brd->sz/2?'0':'1';
+        if( (count0==sz/2 || count1==sz/2) && count0+count1<sz){
+            for(int i=0;i<sz;i++){
+                if(brd->b2d[j][i]==UNK){
+                    brd->b2d[j][i]=count1==sz/2?ZERO:ONE;
                     flag=true;
                 }
             }
         }
     }
     
-    for(int i=0;i<brd->sz;i++){
+    for(int i=0;i<sz;i++){
         int count0=0;
         int count1=0;
-        for(int j=0;j<brd->sz;j++){
-            if(brd->b2d[j][i]=='0'){
+        // count columns
+        for(int j=0;j<sz;j++){
+            if(brd->b2d[j][i]==ZERO){
                 count0++;
             }
-            if(brd->b2d[j][i]=='1'){
+            if(brd->b2d[j][i]==ONE){
                 count1++;
             }
         }
-        if( (count0==brd->sz/2 || count1==brd->sz/2) && count0+count1<brd->sz){
-            for(int j=0;j<brd->sz;j++){
-                if(brd->b2d[j][i]=='.'){
-                    brd->b2d[j][i]=count1==brd->sz/2?'0':'1';
+        if( (count0==sz/2 || count1==brd->sz/2) && count0+count1<sz){
+            for(int j=0;j<sz;j++){
+                if(brd->b2d[j][i]==UNK){
+                    brd->b2d[j][i]=count1==sz/2?ZERO:ONE;
                     flag=true;
                 }
             }
         }
     }
-    
-    
     return flag;
 }
 
@@ -208,7 +236,6 @@ void printboard(board* brd){
     }
     printf("\n");
 }
-
 
 void test(void)
 {
