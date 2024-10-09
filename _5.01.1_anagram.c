@@ -23,7 +23,7 @@ int main(int argc,char** argv){
     char lines[MAXSIZE]={0};
     while((fgets(lines,sizeof(lines),fp))){
         lines[strlen(lines) -  1] = '\0';
-        if (anagram(s,lines)){
+        if (anagram(s,lines) && strcmp(s,lines)){
             printf("%s\n",lines);
         }
     }
