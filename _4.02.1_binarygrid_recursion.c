@@ -34,24 +34,13 @@ int main(void)
 {
     test();
 
-    board b;
-    char str[BOARDSTR] = {0};
-    assert(str2board(&b, "111..011.01.1001"));
-    for (int j = 0; j < b.sz; j++) {
-        for (int i = 0; i < b.sz; i++) {
-            str[j * b.sz + i] = counting(i, j, &b)+'0';
-        }
-    }
-    assert(!strcmp(str, "0000100110011001"));
-    printboard(&b);
-
     return 0;
 }
 
 bool solve_board(board* brd) {
     int solutions = 0;
     board temp;
-    copyboard(&temp,brd);
+    copyboard(&temp, brd);
     return !recursion(0, brd, &temp, &solutions);
 }
 
@@ -60,10 +49,10 @@ bool recursion(int index, board* brd, board* temp, int* solutions) {
     int x = index % sz;
     int y = index / sz;
 
-    if (index>=sz*sz) { // escape recursion
+    if (index >= sz * sz) { // escape recursion
         copyboard(brd, temp);
         (*solutions)++;
-        if (*solutions > 1) {  
+        if (*solutions > 1) {
             return true; // 2: for the second time we find a solution, it returns a true
         }
         return false; // 1: for the first time we find a solution, it returns a false
@@ -73,7 +62,7 @@ bool recursion(int index, board* brd, board* temp, int* solutions) {
         return recursion(index + 1, brd, temp, solutions);
     }
 
-    static char elements[] = {ZERO,ONE};
+    static char elements[] = { ZERO,ONE };
     for (int i = 0; i < 2; i++) {
         char guess = elements[i];
         temp->b2d[y][x] = guess;
@@ -152,31 +141,26 @@ void board2str(char* str, board* brd) {
 bool three_in_a_sequence(int x, int y, board* brd) {
     // return false if three in a sequence
     int sz = brd->sz;
-    // x-2 x-1 x
-    if (0 <= x - 2 && brd->b2d[y][x] != UNK && brd->b2d[y][x] == brd->b2d[y][x - 2] && brd->b2d[y][x] == brd->b2d[y][x - 1]) {
-        return false;
-    }
-    // x-1 x x+1
-    if (0 <= x - 1 && x + 1 < sz && brd->b2d[y][x] != UNK \
-        && brd->b2d[y][x] == brd->b2d[y][x - 1] && brd->b2d[y][x] == brd->b2d[y][x + 1]) {
-        return false;
-    }
-    // x x+1 x+2
-    if (x + 2 < sz && brd->b2d[y][x] != UNK && brd->b2d[y][x] == brd->b2d[y][x + 1] && brd->b2d[y][x] == brd->b2d[y][x + 2]) {
-        return false;
-    }
-    // y-2 y-1 y
-    if (0 <= y - 2 && brd->b2d[y][x] != UNK && brd->b2d[y][x] == brd->b2d[y - 2][x] && brd->b2d[y][x] == brd->b2d[y - 1][x]) {
-        return false;
-    }
-    // y-1 y y+1
-    if (0 <= y - 1 && y + 1 < sz && brd->b2d[y][x] != UNK \
-        && brd->b2d[y][x] == brd->b2d[y - 1][x] && brd->b2d[y][x] == brd->b2d[y + 1][x]) {
-        return false;
-    }
-    // y y+1 y+2
-    if (y + 2 < sz && brd->b2d[y][x] != UNK && brd->b2d[y][x] == brd->b2d[y + 1][x] && brd->b2d[y][x] == brd->b2d[y + 2][x]) {
-        return false;
+    char diff[] = { 'x','y' };
+    // choose which direction to be considered
+    for (int c = 0; c < 2; c++) {
+        int sx = diff[c] == 'x' ? 1 : 0;
+        int sy = diff[c] == 'y' ? 1 : 0;
+        for (int k = -2; k <= 0; k++) {
+            // consider consecutive three
+            int x1 = x + k * sx;
+            int y1 = y + k * sy;
+            int x2 = x + (k + 1) * sx;
+            int y2 = y + (k + 1) * sy;
+            int x3 = x + (k + 2) * sx;
+            int y3 = y + (k + 2) * sy;
+            if (0 <= x1 && 0 <= y1 && x3 < sz && y3 < sz \
+                && brd->b2d[y1][x1] != UNK \
+                && brd->b2d[y1][x1] == brd->b2d[y2][x2] \
+                && brd->b2d[y1][x1] == brd->b2d[y3][x3]) {
+                return false;
+            }
+        }
     }
     return true;
 }
@@ -184,32 +168,18 @@ bool three_in_a_sequence(int x, int y, board* brd) {
 bool counting(int x, int y, board* brd) {
     // return false if the numbers of zeros and ones in a line differ
     int sz = brd->sz;
-    // count zeros and ones of that row
-    int count0 = 0;
-    int count1 = 0;
-    for (int i = 0; i < sz; i++) {
-        if (brd->b2d[y][i] == ZERO) {
-            count0++;
-        }
-        if (brd->b2d[y][i] == ONE) {
-            count1++;
-        }
+    // count zeros and ones of that row and column
+    int count0x = 0;
+    int count1x = 0;
+    int count0y = 0;
+    int count1y = 0;
+    for (int k = 0; k < sz; k++) {
+        count0x = brd->b2d[y][k] == ZERO ? count0x + 1 : count0x;
+        count1x = brd->b2d[y][k] == ONE ? count1x + 1 : count1x;
+        count0y = brd->b2d[k][x] == ZERO ? count0y + 1 : count0y;
+        count1y = brd->b2d[k][x] == ONE ? count1y + 1 : count1y;
     }
-    if (count0 > sz / 2 || count1 > sz / 2) {
-        return false;
-    }
-    // count zeros and ones of that column
-    count0 = 0;
-    count1 = 0;
-    for (int j = 0; j < sz; j++) {
-        if (brd->b2d[j][x] == ZERO) {
-            count0++;
-        }
-        if (brd->b2d[j][x] == ONE) {
-            count1++;
-        }
-    }
-    if (count0 > sz / 2 || count1 > sz / 2) {
+    if (count0x > sz / 2 || count1x > sz / 2 || count0y > sz / 2 || count1y > sz / 2) {
         return false;
     }
     return true;
@@ -227,11 +197,8 @@ void printboard(board* brd) {
 
 void test(void)
 {
-
-
-
     board b;
-    char str[BOARDSTR] = {0};
+    char str[BOARDSTR] = { 0 };
 
     assert(str2board(&b, "111..011.01.1001"));
     for (int j = 0; j < b.sz; j++) {
