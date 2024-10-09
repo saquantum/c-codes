@@ -33,7 +33,7 @@ int main() {
 
 	solve(board);
 
-	printboard(board, 1);
+	printboard(board, 0);
 }
 
 void solve(char board[ROWS][COLUMNS]) {
