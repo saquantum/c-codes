@@ -7,12 +7,16 @@
 #define ROWS 20
 #define COLUMNS 5
 #define PLAYINGHEIGHT 6
+#define ALPHASIZE 26
 
 #define GRN  "\x1B[32m"
 #define RED  "\x1B[31m"
 #define NRM  "\x1B[0m"
 
+#define EMPTY '0'
+
 void solve(char board[ROWS][COLUMNS]);
+bool win(char board[ROWS][COLUMNS]);
 bool falldown(char board[ROWS][COLUMNS]);
 bool shiftarray(int shift, char arr[], int length, int pointer_dist);
 bool three_in_a_sequence(int x, int y, char board[ROWS][COLUMNS]);
@@ -28,17 +32,37 @@ int main() {
 
 	srand(5);
 	char board[ROWS][COLUMNS] = { 0 };
-	random_initialize(board, 4);
+	random_initialize(board,2);
 	printboard(board, 1);
 
 	solve(board);
 
-	printboard(board, 0);
+	printboard(board, 1);
 }
 
 void solve(char board[ROWS][COLUMNS]) {
-	while(falldown(board));
-	printf("Game set. Can't find any more to crush.\n");
+	bool temp;
+	while ((temp = falldown(board))) {
+		printf("temp=%d\n", temp);
+	};
+	printf("temp=%d\n", temp);
+	if (win(board)) {
+		printf("You win!\n");
+	}
+	else {
+		printf("Game set. Can't find any more to crush.\n");
+	}
+}
+
+bool win(char board[ROWS][COLUMNS]) {
+	for (int j = PLAYINGHEIGHT - 1; j >= 0; j--) {
+		for (int i = 0; i < COLUMNS; i++) {
+			if (board[j][i] != EMPTY) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 bool falldown(char board[ROWS][COLUMNS]) {
@@ -78,10 +102,10 @@ bool shiftarray(int shift, char arr[], int length, int pointer_dist) {
 	}
 	for (int i = 0; i < length; i++) {
 		if (0 <= i - shift && i - shift < length) {
-			arr[i * pointer_dist] =temp[i-shift];
+			arr[i * pointer_dist] = temp[i - shift];
 		}
 		else {
-			arr[i * pointer_dist] = '0';
+			arr[i * pointer_dist] = EMPTY;
 		}
 	}
 	free(temp);
@@ -103,9 +127,10 @@ bool three_in_a_sequence(int x, int y, char board[ROWS][COLUMNS]) {
 			int y2 = y + (k + 1) * sy;
 			int x3 = x + (k + 2) * sx;
 			int y3 = y + (k + 2) * sy;
-			if (is_in_board(x1,y1) && is_in_board(x3,y3)\
-				&& is_in_play_area(x1,y1) && is_in_play_area(x3,y3)\
-				&& board[y1][x1]==board[y2][x2]\
+			if (is_in_board(x1, y1) && is_in_board(x3, y3)\
+				&& is_in_play_area(x1, y1) && is_in_play_area(x3, y3)\
+				&& board[y1][x1]!=EMPTY \
+				&& board[y1][x1] == board[y2][x2]\
 				&& board[y1][x1] == board[y3][x3]) {
 				return true;
 			}
@@ -115,6 +140,10 @@ bool three_in_a_sequence(int x, int y, char board[ROWS][COLUMNS]) {
 }
 
 void random_initialize(char board[ROWS][COLUMNS], int colours) {
+	if (!((0 < colours) && (colours <= ALPHASIZE))) {
+		printf("the input of colours should be in between 1 and 26.\n");
+		exit(1);
+	}
 	for (int j = ROWS - 1; j >= 0; j--) {
 		for (int i = 0; i < COLUMNS; i++) {
 			board[j][i] = 'A' + rand() % colours;
@@ -128,11 +157,11 @@ void printboard(char board[ROWS][COLUMNS], int mode) {
 
 	for (int j = mode == 0 ? PLAYINGHEIGHT - 1 : ROWS - 1; j >= 0; j--) {
 		for (int i = 0; i < COLUMNS; i++) {
-			printf("%s%c ", three_in_a_sequence(i,j,board)?RED:NRM, board[j][i]);
+			printf("%s%2c", three_in_a_sequence(i, j, board) ? RED : NRM, board[j][i]);
 		}
-		printf("%s\n",NRM);
+		printf("%s\n", NRM);
 	}
-	printf("%s\n",NRM);
+	printf("%s\n", NRM);
 }
 
 bool is_in_play_area(int x, int y) {
@@ -149,6 +178,6 @@ void test() {
 	assert(!is_in_board(COLUMNS, 3));
 	assert(!is_in_board(1, ROWS));
 	assert(!is_in_board(0, -1));
-	assert(is_in_play_area(0, PLAYINGHEIGHT-1));
+	assert(is_in_play_area(0, PLAYINGHEIGHT - 1));
 	assert(!is_in_play_area(0, PLAYINGHEIGHT));
 }
