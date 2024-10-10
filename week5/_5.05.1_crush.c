@@ -32,7 +32,7 @@ int main() {
 
 	srand(5);
 	char board[ROWS][COLUMNS] = { 0 };
-	random_initialize(board,2);
+	random_initialize(board,1);
 	printboard(board, 1);
 
 	solve(board);
@@ -127,8 +127,7 @@ bool three_in_a_sequence(int x, int y, char board[ROWS][COLUMNS]) {
 			int y2 = y + (k + 1) * sy;
 			int x3 = x + (k + 2) * sx;
 			int y3 = y + (k + 2) * sy;
-			if (is_in_board(x1, y1) && is_in_board(x3, y3)\
-				&& is_in_play_area(x1, y1) && is_in_play_area(x3, y3)\
+			if (is_in_play_area(x1, y1) && is_in_play_area(x3, y3)\
 				&& board[y1][x1]!=EMPTY \
 				&& board[y1][x1] == board[y2][x2]\
 				&& board[y1][x1] == board[y3][x3]) {
@@ -165,7 +164,7 @@ void printboard(char board[ROWS][COLUMNS], int mode) {
 }
 
 bool is_in_play_area(int x, int y) {
-	return y < PLAYINGHEIGHT;
+	return is_in_board(x,y) && y < PLAYINGHEIGHT;
 }
 
 bool is_in_board(int x, int y) {
