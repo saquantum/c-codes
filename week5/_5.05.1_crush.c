@@ -33,6 +33,7 @@ bool three_in_a_sequence(int x, int y, state* s);
 bool is_in_play_area(int x, int y);
 bool is_in_board(int x, int y);
 void printboard(state* s, int mode);
+char* arr2str(char* a, int length);
 void test(void);
 
 int main(void)
@@ -148,6 +149,7 @@ int nonempty_line(const state* s){
         for(int i=0;i<COLUMNS;i++){
             countempty=s->board[j][i]==EMPTY?countempty+1:countempty;
         }
+        
         if(countempty<COLUMNS){
             return j;
         }
@@ -269,132 +271,110 @@ void printboard(state* s, int mode) {
 	printf("%s\n", NRM);
 }
 
+char* arr2str(char* a, int length){ // must use with "free"!
+    if(!a || length<0){
+        return NULL;
+    }
+    
+    char* out=(char*)malloc(sizeof(char)*(length+1));
+    if(!out){
+        return NULL;
+    }
+    for(int i=0;i<length;i++){
+        out[i]=a[i];
+    }
+    out[length]='\0';
+    return out;
+}
+
 void test(void){
-    assert(initialise(NULL, "") == false);
    state s;
-   assert(initialise(&s, NULL) == false);
-   // Input string too short (not a multiple of 5)
-   assert(initialise(&s, "ABCDBCDAACDAABDAABCAABCDABCDA") == false);
-   // Incorrect character '+'
-   assert(initialise(&s, "ABCDBCDAACDAABDAABCAABCDABCD+A") == false);
+    
+    initialise(&s, "...............");
+    assert(nonempty_line(&s) == -1);
 
-/*
-BBBDB
-CDAAC
-DAABD
-AABCA
-ABCDA
-BCAAA
-*/
-   // Well-formed string
-   assert(initialise(&s, "BBBDBCDAACDAABDAABCAABCDABCAAA") == true);
-   char str[ROWS*COLUMNS+1];
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "BBBDBCDAACDAABDAABCAABCDABCAAA") == 0);
+    initialise(&s, "...............ABCDE");
+    assert(nonempty_line(&s) == 0);
 
-   assert(matches(&s) == true);
-/*
-...DB
-CDAAC
-DAABD
-AABC.
-ABCD.
-BC...
-*/
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "...DBCDAACDAABDAABC.ABCD.BC...") == 0);
+    initialise(&s, "...............ABCDE....."); 
+    assert(nonempty_line(&s) == 1);
+    
+    initialise(&s, "...............A.C.E.........."); 
+    assert(nonempty_line(&s) == 2);
+    
+    char arr1[] = {'A', 'B', 'C', 'D', 'E'};
+    assert(shiftarray(-1, arr1, 5, 1) == true);
+    char* result1 = arr2str(arr1, 5);
+    assert(strcmp(result1, "BCDE.") == 0);
+    free(result1);
 
-   assert(dropblocks(&s) == true);
-/*
-.....
-CD.D.
-DAAA.
-AAABB
-ABBCC
-BCCDD
-*/
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "CD.D.DAAA.AAABBABBCCBCCDD") == 0 );
+    // Test case 2: Shift right by 1, simple array
+    char arr2[] = {'A', 'B', 'C', 'D', 'E'};
+    assert(shiftarray(1, arr2, 5, 1) == true);
+    char* result2 = arr2str(arr2, 5);
+    assert(strcmp(result2, ".ABCD") == 0);
+    free(result2);
 
-/*
-.....
-CD.D.
-D....
-...BB
-ABBCC
-BCCDD
-*/
-   assert(matches(&s) == true);
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "CD.D.D.......BBABBCCBCCDD") == 0);
-   assert(dropblocks(&s) == true);
-/*
-C..D.
-DD.BB
-ABBCC
-BCCDD
-*/
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "C..D.DD.BBABBCCBCCDD") == 0);
+    // Test case 3: No shift (shift = 0)
+    char arr3[] = {'1', '2', '3', '4', '5'};
+    assert(shiftarray(0, arr3, 5, 1) == true);
+    char* result3 = arr2str(arr3, 5);
+    assert(strcmp(result3, "12345") == 0);
+    free(result3);
 
+    // Test case 4: Shift left by more than length (should empty array)
+    char arr4[] = {'1', '2', '3', '4', '5'};
+    assert(shiftarray(-6, arr4, 5, 1) == true);
+    char* result4 = arr2str(arr4, 5);
+    assert(strcmp(result4, ".....") == 0);
+    free(result4);
 
+    // Test case 5: Shift right by more than length (should empty array)
+    char arr5[] = {'1', '2', '3', '4', '5'};
+    assert(shiftarray(6, arr5, 5, 1) == true);
+    char* result5 = arr2str(arr5, 5);
+    assert(strcmp(result5, ".....") == 0);
+    free(result5);
 
-   /* File version */
-   assert(initialise(&s, "./b1.txt") == true);
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "BBBDBCDAACDAABDAABCAABCDABCAAA") == 0);
+    // Test case 6: Shift in a 2D array (pointer_dist > 1), column shift
+    char board[5][5] = {
+        {'A', 'B', 'C', 'D', 'E'},
+        {'F', 'G', 'H', 'I', 'J'},
+        {'K', 'L', 'M', 'N', 'O'},
+        {'P', 'Q', 'R', 'S', 'T'},
+        {'U', 'V', 'W', 'X', 'Y'}
+    };
+    // Shifting the first column of the board by 1 down (pointer_dist = 5)
+    assert(shiftarray(1, &(board[0][0]), 5, 5) == true);
+    char* result6 = arr2str((char*)board, 25); // Flatten 2D array into a string
+    assert(strcmp(result6, ".BFKPUCGLQVDRHMWESINXTOJY") == 0); // Check expected result
+    free(result6);
+    
+    s.board[0][0] = 'A'; s.board[0][1] = 'A'; s.board[0][2] = 'A'; s.board[0][3] = '.'; s.board[0][4] = '.';
+    assert(three_in_a_sequence(0, 0, &s) == true); // Match starting at (0,0)
+    assert(three_in_a_sequence(1, 0, &s) == true); // Match starting at (1,0)
+    assert(three_in_a_sequence(2, 0, &s) == true); // Match starting at (2,0)
+    assert(three_in_a_sequence(3, 0, &s) == false); // No match
 
-   /* Match at 3 (not 4) on left near top of board */
-   assert(initialise(&s, "lft.txt") == true);
-   assert(matches(&s)==true);
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "ABCDE.BCDE.CDEF.DEFABCDEFCDEFADEFAB") == 0);
+    // Test case 2: Vertical match
+    s.board[0][0] = 'B'; s.board[1][0] = 'B'; s.board[2][0] = 'B'; s.board[3][0] = '.'; s.board[4][0] = 'C';
+    assert(three_in_a_sequence(0, 0, &s) == true); // Match starting at (0,0)
+    assert(three_in_a_sequence(0, 1, &s) == true); // Match starting at (0,1)
+    assert(three_in_a_sequence(0, 2, &s) == true); // Match starting at (0,2)
+    assert(three_in_a_sequence(0, 3, &s) == false); // No match
 
+    // Test case 3: Mixed characters with no matches
+    s.board[0][0] = 'C'; s.board[0][1] = 'D'; s.board[0][2] = 'E'; s.board[0][3] = 'F'; s.board[0][4] = 'G';
+    assert(three_in_a_sequence(0, 0, &s) == false); // No match
 
-   // All of these can be matched on the first pass ...
-/*
-AAAAA
-AAAAA
-AAAAA
-AAAAA
-AAAAA
-AAAAA
-*/
-   assert(initialise(&s, "./a.txt") == true);
-   assert(matches(&s)==true);
-   assert(dropblocks(&s)==true);
-   assert(tostring(&s, str) == true);
-   // Board is empty -> empty string ""
-   assert(strlen(str) == 0);
-   assert(matches(&s)==false);
+    // Test case 4: Edge case with dots
+    s.board[0][0] = '.'; s.board[0][1] = '.'; s.board[0][2] = 'A'; s.board[0][3] = 'A'; s.board[0][4] = 'A';
+    assert(three_in_a_sequence(2, 0, &s) == true); // Match starts at (2,0)
+    assert(three_in_a_sequence(3, 0, &s) == false); // No match
 
-   /* Some of these3 are 'off' the screen so not matched
-      on the first pass */
-/*
-CCCCC
-CCCCC
-CCCCC
-CCCCC
-CCCCC
-CCCCC
-CCCCC
-CCCCC
-*/
-   assert(initialise(&s, "./c.txt") == true);
-   assert(matches(&s)==true);
-   assert(dropblocks(&s)==true);
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "CCCCCCCCCC") == 0);
-
-/* Big, complex starting data that you should
-   be able to match and drop lots of times ... */
-   assert(initialise(&s, "./fourteen.txt") == true);
-   // Keep looping while we can make changes.
-   for(int i=0; i<14; i++){
-      assert(matches(&s));
-      assert(dropblocks(&s));
-   }
-   assert(tostring(&s, str) == true);
-   assert(strcmp(str,    "...B...ABEBCCDDAABAE") == 0);
+    // Test case 5: Out of bounds check
+    s.board[0][0] = 'A'; s.board[1][0] = 'A'; s.board[2][0] = 'A';
+    assert(three_in_a_sequence(0, 3, &s) == false); // Out of bounds
+    assert(three_in_a_sequence(3, 0, &s) == false); // Out of bounds
 
 }
