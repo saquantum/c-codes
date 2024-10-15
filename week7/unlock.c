@@ -3,8 +3,8 @@
 #include<stdbool.h>
 #include<assert.h>
 
-#define ROWS 5
-#define COLUMNS 5
+#define ROWS 3
+#define COLUMNS 3
 #define EMPTY 0
 
 void paths(int x0, int y0, int count, int board[ROWS][COLUMNS], int* total);
@@ -28,7 +28,7 @@ int main() {
 void paths(int x0, int y0, int count, int board[ROWS][COLUMNS], int* total) {
 	board[y0][x0] = count;
 	if (!hasnext(x0, y0, board)) {
-		if (printpath(board,1)==25) {
+		if (printpath(board,0)) {
 			(*total)++;
 		}
 		board[y0][x0] = EMPTY;
@@ -65,7 +65,7 @@ int printpath(int board[ROWS][COLUMNS], int mode) {
 	int* a = (int*)calloc(ROWS * COLUMNS,sizeof(int));
 	if (!a) {
 		printf("not enough heap memory.\n");
-		return;
+		return -1;
 	}
 	for (int j = 0; j < ROWS; j++) {
 		for (int i = 0; i < COLUMNS; i++) {
