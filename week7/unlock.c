@@ -65,6 +65,7 @@ int printpath(int board[ROWS][COLUMNS], int mode) {
 	int* a = (int*)calloc(ROWS * COLUMNS,sizeof(int));
 	if (!a) {
 		printf("not enough heap memory.\n");
+		free(a);
 		return -1;
 	}
 	for (int j = 0; j < ROWS; j++) {
@@ -80,7 +81,7 @@ int printpath(int board[ROWS][COLUMNS], int mode) {
 	}
 	int count = 0;
 	for (int k = 0; k < ROWS * COLUMNS;k++) {
-		if (a[k]) {
+		if (a[k]) { 
 			if (!mode) {
 				printf("%d", a[k]);
 			}
@@ -95,6 +96,7 @@ int printpath(int board[ROWS][COLUMNS], int mode) {
 	if (!mode) {
 		printf(" ], length = %d\n", count);
 	}
+	free(a);
 	return count;
 }
 
