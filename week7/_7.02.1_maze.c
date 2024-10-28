@@ -13,6 +13,8 @@
 #define NRM  "\x1B[0m"
 
 void test();
+bool hasNext(const char* maze, int start, char* wall, char c, int height, int width);
+void findWall(const char* maze, int start, char* wall, char c, int height, int width);
 bool reachedExit(int k, char* path, int height, int width);
 void findPath(const char* maze, int start, char* path, int height, int width);
 int mazeEntrance(const char* maze, int height, int width);
@@ -20,9 +22,49 @@ char* maze2String(const char* maze, int height, int width);
 char* string2Maze(const char* str, int height, int width);
 void printMaze(const char* maze, int height, int width);
 void printPath(const char* path, int height, int width);
+void printLabeledWalls(const char* wall, int height, int width);
 
 int main() {
 	test();
+}
+
+bool hasNext(const char* maze, int start, char* wall, char c, int height, int width) {
+	int x0 = start % width;
+	int y0 = start / width;
+	char directions[] = { 'u','r','d','l' };
+	for (int i = 0; i < 4; i++) {
+		int x = x0;
+		int y = y0;
+		char d = directions[i];
+		x = (d == 'r') ? x + 1 : (d == 'l') ? x - 1 : x;
+		y = (d == 'u') ? y - 1 : (d == 'd') ? y + 1 : y;
+		int nextIndex = x + y * width;
+		if (x >= 0 && x < width && y >= 0 && y < height && maze[nextIndex] == WALL && wall[nextIndex] != c) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void findWall(const char* maze, int start, char* wall, char c, int height, int width) {
+	wall[start] = c;
+	if (!hasNext(maze,start,wall,c,height,width)) {
+		return;
+	}
+	int x0 = start % width;
+	int y0 = start / width;
+	char directions[] = { 'u','r','d','l' };
+	for (int i = 0; i < 4; i++) {
+		int x = x0;
+		int y = y0;
+		char d = directions[i];
+		x = (d == 'r') ? x + 1 : (d == 'l') ? x - 1 : x;
+		y = (d == 'u') ? y - 1 : (d == 'd') ? y + 1 : y;
+		int nextIndex = x + y * width;
+		if (x >= 0 && x < width && y >= 0 && y < height && maze[nextIndex] == WALL && wall[nextIndex] != c) {
+			findWall(maze, nextIndex, wall,c, height, width);
+		}
+	}
 }
 
 bool reachedExit(int k, char* path, int height, int width) {
@@ -111,8 +153,17 @@ void printPath(const char* path, int height, int width) {
 				printf("%s%c ",GRN, path[i + j * width]);
 			}
 			else {
-				printf("%sx ",RED);
+				printf("%s# ",RED);
 			}
+		}
+		printf("\n");
+	}
+}
+
+void printLabeledWalls(const char* wall, int height, int width) {
+	for (int j = 0; j < height; j++) {
+		for (int i = 0; i < width; i++) {
+			printf("%s%c ",NRM, wall[i + j * width] ? wall[i + j * width] : '.');
 		}
 		printf("\n");
 	}
@@ -127,6 +178,20 @@ void test() {
 	printf("entrance = %d\n",mazeEntrance(M, height, width));
 	char* path = calloc(height * width, sizeof(char));
 	findPath(M, mazeEntrance(M, height, width),path,height,width);
+
+	char* wall = calloc(height * width, sizeof(char));
+	char c = 'A';
+	for (int j = 0; j < height; j++) {
+		for (int i = 0; i < width; i++) {
+			int k = i + j * width;
+			if (M[k] == WALL && wall[k]==0) {
+				findWall(M, k, wall, c, height, width);
+				c++;
+			}
+		}
+	}
+	printLabeledWalls(wall, height, width);
+
 	free(path);
 	free(M);
 }
