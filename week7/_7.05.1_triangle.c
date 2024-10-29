@@ -11,7 +11,7 @@ int main(void) {
     SDL_Simplewin sw;
     Neill_SDL_Init(&sw);
     int size=4*64;
-    recursion(&sw,(WWIDTH / 2)-size/2,(WHEIGHT / 2)-size/2,size);
+    recursion(&sw,(WWIDTH / 2),(WHEIGHT / 2),size);
 
     Neill_SDL_UpdateScreen(&sw);
     SDL_Delay(5000);  // Keep the window open for 5 seconds
