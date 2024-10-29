@@ -191,7 +191,8 @@ void test() {
 		}
 	}
 	printLabeledWalls(wall, height, width);
-
+    
+    free(wall);
 	free(path);
 	free(M);
 }
