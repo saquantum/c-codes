@@ -5,30 +5,31 @@
 #include<math.h>
 
 #define MAXSIZE 100
-long long parseint(char* str);
+long long parsell(char* str);
 int primefactors(long long n, int* buffer);
 void printfactors(int* a, int len);
 bool isprime(int n);
 void test();
 
 int main(int argc, char** argv) {
+    //38654705664
     assert(argc == 2);
-    long long n = parseint(argv[1]);
-    printf("%lld\n",n);
+    long long n = parsell(argv[1]);
+    printf("%lld\n", n);
     int buffer[MAXSIZE] = { 0 };
     int len;
-    printf(" length=%d\n",len=primefactors(n, buffer));
-    printfactors(buffer,len);
+    printf("length=%d\n", len = primefactors(n, buffer));
+    printfactors(buffer, len);
     test();
 
 }
 
-long long parseint(char* str) {
+long long parsell(char* str) {
     long long n = 0L;
     int i = 0;
     bool minus = false;
     while (str[i]) {
-        if (i==0 && str[i] == '-') {
+        if (str[0] == '-') {
             minus = true;
         }
         if ('0' <= str[i] && str[i] <= '9') {
@@ -36,34 +37,36 @@ long long parseint(char* str) {
         }
         i++;
     }
-    return minus?-n:n;
+    return minus ? -n : n;
 }
 
 int primefactors(long long n, int* buffer) {
-    // instead of using a large enough buffer, might also use linked list.
     int count = 0;
+    while (n % 2 == 0) {
+        buffer[count++] = 2;
+        n /= 2;
+    }
     while (n > 1) {
-        bool flag = true;
-        for (long long i = 2; flag && i <= n; i++) {
+        bool flag = false;
+        for (long long i = 3; !flag && i <= sqrt(n); i+=2) {
             if (isprime(i) && n % i == 0) {
-                buffer[count] = i;
-                printf("%d ", i);
-                count++;
-                flag = false;
+                buffer[count++] = i;
+                flag = true;
                 n = n / i;
             }
         }
-        if (flag) {  // If no prime divisor is found, n is prime
-            buffer[count] = n;
-            count++;
-            n = 1;
+        if (!flag) {  // If no prime divisor is found, n is prime itself
+            buffer[count++] = n;
+            n = 1; // set n=1 to exit loop
         }
     }
     return count;
 }
 
 void printfactors(int* a, int len) {
-    // might use a hashMap to count.
+    if (len <= 0) {
+        return;
+    }
     if (len > 1) {
         for (int i = 1; i < len; i++) {
             for (int j = i; j > 0; j--) {
@@ -75,45 +78,53 @@ void printfactors(int* a, int len) {
             }
         }
     }
+   
     int n = 1;
     for (int i = 0; i < len; i++) {
         n = n * a[i];
     }
-
-    int* nums = (int*)calloc(len, sizeof(int));
-    int* expos = (int*)calloc(len, sizeof(int));
-    assert(nums && expos);
-    int count = 0;
-    for (int i = 0; i < len; i++) {
-
-        int k = 0;
-        bool flag = false;
-        while (!flag) {
-            if (!nums[k]) {
-                nums[k] = a[i];
-                expos[k] = 1;
-                count++;
-                flag = true;
-            }else if(nums[k] == a[i]) {
-                expos[k]++;
-                flag = true;
-            }
-            k++;
+    int count = 1;
+    for (int i = 1; i < len; i++) {
+        if (a[i - 1] != a[i]) {
+            count++;
         }
     }
-    printf("%d = 1 x ",n);
-    for (int i = 0; i < count;i++) {
-        if (expos[i] == 1) {
-            printf("%d", nums[i]);
+
+    // might use a hashMap to count.
+    int* facs = (int*)calloc(count, sizeof(int));
+    int* expos = (int*)calloc(count, sizeof(int));
+    assert(facs && expos);
+    int factor = a[0];
+    int exponent = 1;
+    int k = 0;
+    for (int i = 1; i < len && k<count; i++) {
+        if (a[i] == factor) {
+            exponent++;
         }
         else {
-            printf("%d^%d", nums[i], expos[i]);
+            facs[k] = factor;
+            expos[k] = exponent;
+            k++;
+            factor = a[i];
+            exponent = 1;
         }
-        if (i + 1 < count && nums[i + 1]) {
+    }
+    facs[k] = factor;
+    expos[k] = exponent;
+    k++;
+    printf("%d = 1 x ", n);
+    for (int i = 0; i < k; i++) {
+        if (expos[i] == 1) {
+            printf("%d", facs[i]);
+        }
+        else {
+            printf("%d^%d", facs[i], expos[i]);
+        }
+        if (i + 1 < k) {
             printf(" x ");
         }
     }
-    free(nums);
+    free(facs);
     free(expos);
 }
 
@@ -145,7 +156,4 @@ void test() {
     assert(!isprime(8));
     assert(!isprime(9));
 
-    //free(primefactors(117));
-
-    //printf("%d\n", parseint("-123"));
 }
