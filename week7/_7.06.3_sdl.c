@@ -1,49 +1,49 @@
 #include "neillsdl2.h"
-#include <math.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+#include<assert.h>
+#include<math.h>
 
-void drawCircleOfCircles(SDL_Simplewin* sw, int centerX, int centerY, int n, int bigRadius, int smallRadius, double lineAngle);
+void drawcircles(SDL_Simplewin* sw, int centerX, int centerY, int prime, int bigRadius, int smallRadius, double lineangle);
 
 int main(void) {
     SDL_Simplewin sw;
     Neill_SDL_Init(&sw);
 
-    int numCircles = 2;            // Try 2 circles to use the line angle adjustment
-    int bigRadius = 100;
-    int smallRadius = 10;
-    double lineAngle = M_PI / 4;   // 45 degrees, for example
+    int prime = 7;            
+    int bigR = 150;
+    int smallR = 10;
+    double lineangle = M_PI / 4;
 
-    drawCircleOfCircles(&sw, WWIDTH / 2, WHEIGHT / 2, numCircles, bigRadius, smallRadius, lineAngle);
+    // we consider 4 as a prime when plotting!    
+    
+    drawcircles(&sw, WWIDTH / 2, WHEIGHT / 2, prime, bigR, smallR, lineangle);
 
     Neill_SDL_UpdateScreen(&sw);
-    SDL_Delay(5000);  // Keep the window open for 5 seconds
-
+    SDL_Delay(5000);
     SDL_Quit();
     atexit(SDL_Quit);
     return 0;
 }
 
-void drawCircleOfCircles(SDL_Simplewin* sw, int centerX, int centerY, int n, int bigRadius, int smallRadius, double lineAngle) {
-    double angleStep, startAngle;
-
-    if (n == 2) {
-        // For two circles, use the specified line angle
-        angleStep = M_PI;  // 180 degrees to place two circles on opposite sides
-        startAngle = lineAngle - M_PI / 2;  // Offset by 90 degrees to align line with lineAngle
+void drawcircles(SDL_Simplewin* sw, int centerX, int centerY, int prime, int bigR, int smallR, double lineangle) {
+    double anglediff = 2 * M_PI / prime;
+    double angle0;
+    // if prime=2, the line angle is considered.
+    if (prime == 2) {
+        angle0 = lineangle;
     } else {
-        // Regular circular arrangement for n > 2
-        angleStep = 2 * M_PI / n;
-        startAngle = M_PI / 2 - M_PI / n;  // Offset angle for bottom alignment
+        // this formula assures that the bottom edge is parallel to the window
+        angle0 = M_PI / 2 - M_PI / prime; 
     }
 
-    for (int i = 0; i < n; i++) {
-        double angle = startAngle + i * angleStep;
-
-        // Calculate the position of each small circle
-        int smallCenterX = centerX + (int)(bigRadius * cos(angle));
-        int smallCenterY = centerY + (int)(bigRadius * sin(angle));
-
-        // Draw the small circle
-        Neill_SDL_SetDrawColour(sw, 255, 0, 0);  // Red color
-        SDL_RenderDrawCircle(sw->renderer, smallCenterX, smallCenterY, smallRadius);
+    for (int i = 0; i < prime; i++) {
+        double angle = angle0 + i * anglediff;
+        // using polar coordinates, x=x0+cos(θ), y=y0+sin(θ).
+        int smallCenterX = centerX + (int)(bigR * cos(angle));
+        int smallCenterY = centerY + (int)(bigR * sin(angle));
+        Neill_SDL_SetDrawColour(sw,255,255,0);
+        Neill_SDL_RenderFillCircle(sw->renderer, smallCenterX, smallCenterY, smallR);
     }
 }
