@@ -5,23 +5,32 @@
 #include<math.h>
 
 #define MAXSIZE 100
+
 long long parsell(char* str);
 int primefactors(long long n, int* buffer);
+int primefactors2draw(int length, int* buffer);
 void printfactors(int* a, int len);
 bool isprime(int n);
-void test();
 
 int main(int argc, char** argv) {
-    //38654705664
     assert(argc == 2);
     long long n = parsell(argv[1]);
     printf("%lld\n", n);
     int buffer[MAXSIZE] = { 0 };
     int len;
     printf("length=%d\n", len = primefactors(n, buffer));
-    printfactors(buffer, len);
-    test();
-
+    
+    for(int i=0;i<len;i++){
+        printf("%d ",buffer[i]);
+    }
+    printf("\n");
+    
+    len=primefactors2draw(len,buffer);
+    for(int i=0;i<len;i++){
+        printf("%d ",buffer[i]);
+    }
+    printf("\n");
+    //printfactors(buffer, len);
 }
 
 long long parsell(char* str) {
@@ -60,26 +69,64 @@ int primefactors(long long n, int* buffer) {
             n = 1; // set n=1 to exit loop
         }
     }
+    if (count > 1) {
+        for (int i = 1; i < count; i++) {
+            for (int j = i; j > 0; j--) {
+                if (buffer[j] < buffer[j - 1]) {
+                    int temp = buffer[j];
+                    buffer[j] = buffer[j - 1];
+                    buffer[j - 1] = temp;
+                }
+            }
+        }
+    }
     return count;
+}
+
+int primefactors2draw(int length, int* buffer){
+    int out=0;
+    int count2=0;
+    for(int i=0;i<length;i++){
+        if(buffer[i]==2){
+            count2++;
+        }
+    }
+    int count4=count2/2;
+    count2=count2%2;
+    int* temp=(int*)calloc(length,sizeof(int));
+    assert(temp);
+    int k = 0;
+    for (int i = length - 1; i >= 0; i--) {
+        if (buffer[i] != 2) {
+            temp[k++] = buffer[i];
+            out++;
+        }
+    }
+    if (count2 > 0) {
+        temp[k++] = 2;
+        out++;
+    }
+    for (int i = 0; i < count4; i++) {
+        temp[k++] = 4;
+        out++;
+    }
+    for(int i=0;i<length;i++){
+        if(i<out){
+            buffer[i]=temp[i];
+        }else{
+            buffer[i]=0;
+        }
+    }
+    free(temp);
+    return out;
 }
 
 void printfactors(int* a, int len) {
     if (len <= 0) {
         return;
     }
-    if (len > 1) {
-        for (int i = 1; i < len; i++) {
-            for (int j = i; j > 0; j--) {
-                if (a[j] < a[j - 1]) {
-                    int temp = a[j];
-                    a[j] = a[j - 1];
-                    a[j - 1] = temp;
-                }
-            }
-        }
-    }
    
-    int n = 1;
+    long long n = 1;
     for (int i = 0; i < len; i++) {
         n = n * a[i];
     }
@@ -112,7 +159,7 @@ void printfactors(int* a, int len) {
     facs[k] = factor;
     expos[k] = exponent;
     k++;
-    printf("%d = 1 x ", n);
+    printf("%lld = 1 x ", n);
     for (int i = 0; i < k; i++) {
         if (expos[i] == 1) {
             printf("%d", facs[i]);
@@ -124,6 +171,7 @@ void printfactors(int* a, int len) {
             printf(" x ");
         }
     }
+    printf("\n");
     free(facs);
     free(expos);
 }
@@ -144,16 +192,4 @@ bool isprime(int n) {
         }
     }
     return true;
-}
-
-void test() {
-    assert(isprime(2));
-    assert(isprime(3));
-    assert(!isprime(4));
-    assert(isprime(5));
-    assert(!isprime(6));
-    assert(isprime(7));
-    assert(!isprime(8));
-    assert(!isprime(9));
-
 }
