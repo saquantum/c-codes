@@ -7,6 +7,10 @@
 
 #define MAXSIZE 100
 #define MAXNUMBER 200
+#define INITBIGR 180
+#define INITSMLR 20
+#define LOOPSTART 1
+#define MAXUINT8 255
 
 typedef struct{
     Uint8 r;
@@ -14,27 +18,33 @@ typedef struct{
     Uint8 b;
 }colour;
 
+typedef struct{
+    int centerX;
+    int centerY;
+    int bigR;
+    int smallR;
+    double lineangle;
+}ringinfo;
+
 long long parsell(char* str);
 int primefactors(long long n, int* buffer);
 int primefactors2draw(int length, int* buffer);
 void printfactors(int* a, int len);
 bool isprime(int n);
-void drawcircles(SDL_Simplewin* sw, int centerX, int centerY, int prime, int bigRadius, int smallRadius, double lineangle, colour c);
-void recursion(SDL_Simplewin* sw, int n, int centerX, int centerY, int length, int* facts, int index, int bigR, int smallR, double lineangle, int* colourindex);
-colour getColour(int length, int index);
+void drawcircles(SDL_Simplewin* sw, int prime, ringinfo ri, colour c);
+void recursion(SDL_Simplewin* sw, int n,  int length, int* facts, int index, ringinfo ri, int* colourindex);
+colour getcolour(int size, int index);
 
 int main(void) {
     SDL_Simplewin sw;
     Neill_SDL_Init(&sw);
     
-    int bigR = 150;
-    int smallR = 20;
-    double lineangle = M_PI / 2;
+    ringinfo ri={WWIDTH / 2, WHEIGHT / 2, INITBIGR, INITSMLR, M_PI / 2};
     // we are unable to implement this for a big enough number ~200 due to limited resolution
-    for(int i=1;!sw.finished && i<MAXNUMBER;i++){
+    for(int i=LOOPSTART;!sw.finished && i<MAXNUMBER;i++){
         
         // reset the screen
-        SDL_SetRenderDrawColor(sw.renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(sw.renderer, 0, 0, 0, MAXUINT8);
         SDL_RenderClear(sw.renderer);
         
         // compute the factorisation
@@ -44,7 +54,7 @@ int main(void) {
         
         // recursively draw circles
         int colourindex=0;
-        recursion(&sw, i, WWIDTH / 2, WHEIGHT / 2, len, facts, 0, bigR, smallR, lineangle, &colourindex);
+        recursion(&sw, i, len, facts, 0, ri, &colourindex);
         
         // update & delay 
         Neill_SDL_UpdateScreen(&sw);
@@ -56,8 +66,8 @@ int main(void) {
     return 0;
 }
 
-void recursion(SDL_Simplewin* sw, int n, int centerX, int centerY, int length, int* facts, int index, int bigR, int smallR, double lineangle, int* colourindex){
-    // we consider 4 as a prime when plotting! 
+void recursion(SDL_Simplewin* sw, int n,  int length, int* facts, int index, ringinfo ri, int* colourindex){
+    // we treat 4 as a prime when plotting! 
     // length: length of factorization
     // facts: the array of prime factors
     // index: points to the current prime of facts
@@ -65,90 +75,96 @@ void recursion(SDL_Simplewin* sw, int n, int centerX, int centerY, int length, i
     // exit condition
     if(index>=length){
         // control the size of circles
-        int plotbigR=bigR+facts[index - 1];
-        int plotsmallR=(double)(2*M_PI*bigR)/(double)4;
-        plotsmallR=smallR<plotsmallR?smallR:plotsmallR;
+        int plotbigR=ri.bigR+facts[index - 1]; // facts[index - 1] is the number of small circles of current ring
+        int plotsmallR=(double)(2*M_PI*ri.bigR)/4.0;
+        plotsmallR=ri.smallR<plotsmallR?ri.smallR:plotsmallR;
         plotsmallR=plotsmallR<plotbigR?plotsmallR:plotbigR;
-        colour c=getColour(n,*colourindex);
-        drawcircles(sw, centerX, centerY, 1, plotbigR+1, plotsmallR+1, lineangle, c);
+        ringinfo tempri={ri.centerX, ri.centerY, plotbigR+1, plotsmallR+1, ri.lineangle};
+        
+        colour c=getcolour(n,*colourindex);
+        drawcircles(sw, 1, tempri, c);
         (*colourindex)++;
         return;
     }
     
     int prime=facts[index];
     double anglediff = 2 * M_PI / prime;
-    double angle0 = (prime == 2) ? lineangle : M_PI / 2 - M_PI / prime;
+    double angle0 = prime == 2? ri.lineangle : M_PI / 2 - M_PI / prime;
     
+    ringinfo nextri = ri;
     for(int i=0;i<prime;i++){
         double angle = angle0 + i * anglediff;
-        int smallCenterX = centerX + (int)(bigR * cos(angle));
-        int smallCenterY = centerY + (int)(bigR * sin(angle));
-        recursion(sw, n, smallCenterX, smallCenterY, length, facts, index + 1, bigR/prime, smallR, angle, colourindex);
+        nextri.centerX = ri.centerX + (int)(ri.bigR * cos(angle));
+        nextri.centerY = ri.centerY + (int)(ri.bigR * sin(angle));
+        nextri.bigR = ri.bigR/prime;
+        nextri.lineangle=angle;
+        recursion(sw, n, length, facts, index + 1, nextri, colourindex);
     }
 }
 
-void drawcircles(SDL_Simplewin* sw, int centerX, int centerY, int prime, int bigR, int smallR, double lineangle, colour c) {
+void drawcircles(SDL_Simplewin* sw, int prime, ringinfo ri, colour c){
     // draw a big ring of prime small circles with radius smallR centered at (X,Y) with radius bigR.
+    if(prime==1){
+        ri.bigR=0;
+    }
     double anglediff = 2 * M_PI / prime;
     double angle0;
-    if(prime==1){
-        bigR=0;
-    }
-    // if prime=2, the line angle is considered.
+    // if prime=2, the line angle is taken into consideration.
     if (prime == 2) {
-        angle0 = lineangle;
+        angle0 = ri.lineangle;
     } else {
         // this formula assures that the bottom edge is parallel to the window
         angle0 = M_PI / 2 - M_PI / prime; 
     }
+    double angle;
     for (int i = 0; i < prime; i++) {
-        double angle = angle0 + i * anglediff;
+        angle = angle0 + i * anglediff;
         // using polar coordinates, x=x0+cos(θ), y=y0+sin(θ).
-        int smallCenterX = centerX + (int)(bigR * cos(angle));
-        int smallCenterY = centerY + (int)(bigR * sin(angle));
+        int smallCenterX = ri.centerX + (int)(ri.bigR * cos(angle));
+        int smallCenterY = ri.centerY + (int)(ri.bigR * sin(angle));
         Neill_SDL_SetDrawColour(sw,c.r,c.g,c.b);
-        Neill_SDL_RenderFillCircle(sw->renderer, smallCenterX, smallCenterY, smallR);
+        Neill_SDL_RenderFillCircle(sw->renderer, smallCenterX, smallCenterY, ri.smallR);
     }
 }
 
-colour getColour(int length, int index) {
+colour getcolour(int size, int index) {
     colour c = {0, 0, 0};
-    if (length <= 1) {
-        c.b=255;
+    // prettifying edge cases
+    if (size <= 1) {
+        c.b=MAXUINT8;
         return c;
     }
-    if (length == 2) {
-        c.b=index==0?255:0;
-        c.g=index==1?255:0;
+    if (size == 2) {
+        c.b=index==0?MAXUINT8:0;
+        c.g=index==1?MAXUINT8:0;
         return c;
     }
-    if (length == 3) {
-        c.b=index==0?255:0;
-        c.r=index==1?255:0;
-        c.g=index==2?255:0;
+    if (size == 3) {
+        c.b=index==0?MAXUINT8:0;
+        c.r=index==1?MAXUINT8:0;
+        c.g=index==2?MAXUINT8:0;
         return c;
     }
-    double ratio=(double)index/(double)(length-1);
     
+    double ratio=(double)index/(double)(size-1);
+    double pos;
+    // divide into 3 segments: b->r->g->b
     if (ratio < 1.0 / 3.0) {
-        // Blue to Red transition
-        double scale = ratio * 3;           // Normalize ratio to [0, 1] for this segment
-        c.b = (Uint8)(255 * (1 - scale));  // Decrease blue
-        c.r = (Uint8)(255 * scale);        // Increase red
-    } 
-    else if (ratio < 2.0 / 3.0) {
-        // Red to Green transition
-        double scale = (ratio - 1.0 / 3.0) * 3;  // Normalize ratio to [0, 1] for this segment
-        c.r = (Uint8)(255 * (1 - scale));       // Decrease red
-        c.g = (Uint8)(255 * scale);             // Increase green
-    } 
-    else {
-        // Green to Blue transition
-        double scale = (ratio - 2.0 / 3.0) * 3;  // Normalize ratio to [0, 1] for this segment
-        c.g = (Uint8)(255 * (1 - scale));       // Decrease green
-        c.b = (Uint8)(255 * scale);             // Increase blue
+        // blue to red, linearly shift c.b to 0 while c.r to 255
+        pos = ratio * 3;  // a magic formula that makes pos in [0,1].
+        c.b = (Uint8)(MAXUINT8 * (1 - pos));  
+        c.r = (Uint8)(MAXUINT8 * pos);        
+    } else if (ratio < 2.0 / 3.0) {
+        // red to green
+        pos = (ratio - 1.0 / 3.0) * 3;  // a magic formula that makes pos in [0,1].
+        c.r = (Uint8)(MAXUINT8 * (1 - pos));      
+        c.g = (Uint8)(MAXUINT8 * pos);            
+    } else {
+        // green to blue
+        pos = (ratio - 2.0 / 3.0) * 3;  // a magic formula that makes pos in [0,1].
+        c.g = (Uint8)(MAXUINT8 * (1 - pos));       
+        c.b = (Uint8)(MAXUINT8 * pos);             
     }
-    
     return c;
 }
 
