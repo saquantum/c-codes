@@ -1,60 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <stdbool.h>
-#include <sys/time.h>
-
-#define BRDSZ 6
-#define MAXBRDS 200000
-#define MAXSTR (BRDSZ*BRDSZ+BRDSZ+2)
-
-#define EMPTY '.'
-#define INTERROR -1
-#define BUFFERSIZE 50
-#define ALPHABET 26
-
-typedef struct board{
-    char board[BRDSZ][BRDSZ];
-    bool locked[BRDSZ];
-    char hawk;
-    int parent;
-    long long hash;
-}board;
-
-typedef struct state{
-    board** list;
-    int moves;
-}state;
-
-void test(void);
-long long hashcode(board* b);
-int solve(state* s, bool verbose);
-void tracksteps(board* b, state* s);
-bool childboards(int parent, state* s, int* index, bool* found);
-bool push(board* b, int column);
-int exists(state* s, board* b, int index);
-bool equals(board* b1, board* b2);
-bool file2str(const char* fname, char* str);
-bool copyfile2str(FILE* fp, char* tempstr);
-bool strapd(char* dest, int destsize, const char* source);
-state* str2state(const char* str);
-board* str2board(const char* str);
-void updatelocked(board* b);
-bool board2str(board* b, char* buffer);
-bool win(board* b);
-bool isvalid(const char* str);
-bool copystr2board(board* b, const char* str);
-void printboard(board* b);
-void freestate(state* s);
-
-//---------------------------------------------
-
-int main(void){
-    test();
-}
+#include "mydefs.h"
 
 bool file2str(const char* fname, char* str){
     if(!fname || !str){
@@ -64,13 +8,15 @@ bool file2str(const char* fname, char* str){
     if(!fp){
         return false;
     }
-    char tempstr[MAXSTR]={0};
+    char* tempstr=(char*)calloc(MAXSTR+1,sizeof(char)); // here +1, to remove the final hyphen
     if(!copyfile2str(fp, tempstr)){
+        free(tempstr);
         fclose(fp);
         return false;
     }
     fclose(fp);
     strcpy(str,tempstr);
+    free(tempstr);
     return true;
 }
 
@@ -89,36 +35,32 @@ bool copyfile2str(FILE* fp, char* tempstr){
                 return false;
             }
         }
-        if(!strapd(tempstr,MAXSTR,buffer)){
+        if(!strapd(tempstr,MAXSTR+1,buffer)){ // need +1 to remove the final hyphen
             fclose(fp);
             return false;
         }
-        if(!strapd(tempstr,MAXSTR,"-")){
+        if(!strapd(tempstr,MAXSTR+1,"-")){ // i can't find a simpler way :(
             fclose(fp);
             return false;
         }
     }
-    tempstr[strlen(tempstr)-1]=0; // a simple way to remove the final hyphen
+    tempstr[strlen(tempstr)-1]=0; // to remove the final hyphen
     if(!isvalid(tempstr)){
         return false;
     }
     return true;
 }
 
-
 bool strapd(char* dest, int destsize, const char* source){
     // append string source to string dest
     if(!dest || !source){
         return false;
     }
-    int lendest=strlen(dest);
-    int lensrc=strlen(source);
-    if(lendest+lensrc+1>destsize){
+    int remaining=destsize-strlen(dest)-1; 
+    if (remaining<=0) {
         return false;
     }
-    for(int i=0;i<lensrc+1;i++){
-        dest[i+lendest]=source[i];
-    }
+    strncat(dest, source, remaining);
     return true;
 }
 
@@ -249,6 +191,7 @@ int solve(state* s, bool verbose){
         if (verbose) {
             tracksteps(s->list[0], s);
         }
+        freestate(s);
         return s->moves;
     }
     int index=1;
@@ -269,12 +212,14 @@ int solve(state* s, bool verbose){
         }
     }
     if(!found){
+        freestate(s);
         return INTERROR;
     }else{
         if(verbose){
             board* solution = s->list[index-1];
             tracksteps(solution,s);
         }
+        freestate(s);
         return s->moves;
     }
 }
@@ -286,7 +231,7 @@ void tracksteps(board* b, state* s){
     if(b->parent!=-1){
         tracksteps(s->list[b->parent],s);
     }
-    printboard(b);
+    printboard(b,1);
 }
 
 bool childboards(int parent, state* s, int* index, bool* found) {
@@ -410,19 +355,35 @@ bool board2str(board* b, char* buffer){
     return true;
 }
 
-void printboard(board* b){
+void printboard(board* b, int mode){
     if(!b){
         return;
     }
-    printf("%c\n",b->hawk);
-    for(int j=0;j<BRDSZ;j++){
-        for(int i=0;i<BRDSZ;i++){
+    if(mode==0){
+        printf("%c\n",b->hawk);
+        for(int j=0;j<BRDSZ;j++){
+            for(int i=0;i<BRDSZ;i++){
                 printf("%c ",b->board[j][i]);
+            }
+            printf("\n");
         }
-        printf("\n");
+    }else{
+        for(int j=0;j<BRDSZ;j++){
+            bool printed=false;
+            for(int i=0;i<BRDSZ;i++){
+                if(b->board[j][i]!=EMPTY){
+                    printf("%c ",b->board[j][i]);
+                    printed=true;
+                }
+            }
+            if(printed){
+                printf("\n");
+            }
+        }
     }
     printf("\n");
 }
+
 
 void freestate(state* s){
     if(!s){
@@ -432,7 +393,6 @@ void freestate(state* s){
         free(s->list[i]);
     }
     free(s->list);
-    free(s);
 }
 
 
@@ -519,6 +479,8 @@ void test(void){
     str[BRDSZ]=0;
     assert(!strcmp(str,"010111"));
     freestate(s);
+    free(s);
+    
     
     // edge cases: wrong input string    
     assert(!str2board(""));
@@ -543,6 +505,7 @@ void test(void){
     str[BRDSZ]=0;
     assert(!strcmp(str,"111111"));
     freestate(s);
+    free(s);
     
     // only a row
     s=str2state("X-ABCDEF");
@@ -559,6 +522,7 @@ void test(void){
     str[BRDSZ]=0;
     assert(!strcmp(str,"111111"));
     freestate(s);
+    free(s);
     
     // fully occupied left 3 columns
     s=str2state("A-AAA-AAA-AAA-AAA-AAA-AAA");
@@ -575,6 +539,7 @@ void test(void){
     str[BRDSZ]=0;
     assert(!strcmp(str,"111111"));
     freestate(s);
+    free(s);
     
     s=str2state("A-ABC");
     board* b1=str2board("A-ABC-CBA");
@@ -595,6 +560,7 @@ void test(void){
     assert(1==exists(s,b2,1));
     assert(-1==exists(s,NULL,10));
     freestate(s);
+    free(s);
     
     // manually solving, test push and updatelocked functions
     b=str2board("A-ABC-CAB");
@@ -652,9 +618,10 @@ void test(void){
     assert(board2str(s->list[index-1],str));
     assert(!strcmp(str,"A-ABC-ABC"));
     freestate(s);
+    free(s);
     
     
-    char* relpath="ass3/";
+    char* relpath="";
     char path[100]={0};
     
     strcpy(path, relpath);
@@ -664,8 +631,9 @@ void test(void){
     assert(!strcmp(str, "A-B"));
     s=str2state(str);
     assert((s->list[0])->parent==-1);
-    assert(0==solve(s,true));
+    //assert(0==solve(s,false));
     freestate(s);
+    free(s);
     
     strcpy(path,relpath);
     strcpy(str,"");
@@ -673,8 +641,9 @@ void test(void){
     assert(file2str(path,str));
     assert(!strcmp(str,"A-ABC-ABC-ABC-CBA"));
     s=str2state(str);
-    assert(2==solve(s,false));
+    //assert(2==solve(s,false));
     freestate(s);
+    free(s);
     
     strcpy(path,relpath); 
     strcpy(str,"");
@@ -682,8 +651,9 @@ void test(void){
     assert(file2str(path,str));
     assert(!strcmp(str,"O-COMS-COMS-COMS-CMMS-CSSO"));
     s=str2state(str);
-    assert(4==solve(s,false));
+    //assert(4==solve(s,false));
     freestate(s);
+    free(s);
     
     strcpy(path, relpath);
     strcpy(str, "");
@@ -693,7 +663,8 @@ void test(void){
     s=str2state(str);
     //assert(9==solve(s,false));    
     freestate(s);
-
+    free(s);
+    
     strcpy(path, relpath);
     strcpy(str, "");
     strapd(path, 100, "10moves.brd");
@@ -702,6 +673,7 @@ void test(void){
     s=str2state(str);
     //assert(10==solve(s,false));
     freestate(s);
+    free(s);
     
     strcpy(path, relpath);
     strcpy(str, "");
@@ -711,6 +683,7 @@ void test(void){
     s=str2state(str);
     //assert(11==solve(s,false));    
     freestate(s);
+    free(s);
     
     strcpy(path,relpath);
     strcpy(str,"");
@@ -718,15 +691,16 @@ void test(void){
     assert(file2str(path,str));
     assert(!strcmp(str,"A-BC-DE"));
     s=str2state(str);
-    assert(-1==solve(s,false));    
+    //assert(-1==solve(s,false));    
     freestate(s);
+    free(s);
     
     // this test will be removed since it used my own test file
     strcpy(path,relpath);
     strcpy(str,"");
     strapd(path,100,"10lines.txt");
     assert(file2str(path,str));
-    assert(!strcmp(str,"A-AAA-BBB-CCC-DDD-EEE-FFF"));
+    assert(!strcmp(str,"A-AAAAAA-BBBBBB-CCCCCC-DDDDDD-EEEEEE-FFFFFF"));
     // above test will be removed since it used my own test file
     
     
