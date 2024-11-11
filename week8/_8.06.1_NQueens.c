@@ -11,7 +11,7 @@
 #define QUEEN 'X'
 #define EMPTY '.'
 
-#define SIZE 8
+#define SIZE 6
 #define LISTSIZE 200000
 #define INTERROR -1
 
@@ -31,7 +31,7 @@ void printboard(state* s);
 void test();
 
 int main(void) {
-
+    test();
     state** list=calloc(LISTSIZE,sizeof(state*));
     state* init = malloc(sizeof(state));
     for (int j = 0; j < SIZE; j++) {
@@ -54,24 +54,28 @@ int main(void) {
     for (int i = 0; i < index; i++) {
         free(list[i]);
     }
+    free(list);
 }
 
 void childboards(state* parent, state** list, int* index) {
     if (*index >= LISTSIZE) {
         return;
     }
-    int next_row = parent->queens;  // Determine the next row based on number of queens placed
-    if (next_row >= SIZE) {
+    
+    int j = parent->queens;  // Determine the next row based on number of queens placed
+    if (j >= SIZE) {
         return;  // All queens placed, no further child states needed
     }
+    
+    for(int j=0;j<SIZE;j++){
         for (int i = 0; i < SIZE; i++) {
-            if (check(parent, i, next_row)) {
+            if (check(parent, i, j)) {
                 state* child = (state*)malloc(sizeof(state));
                 if (!child) {
                     return;
                 }
                 *child = *parent;
-                child->board[next_row][i] = QUEEN;
+                child->board[j][i] = QUEEN;
                 (child->queens)++;
                 updatestr(child);
                 child->parent = parent;
@@ -87,9 +91,13 @@ void childboards(state* parent, state** list, int* index) {
                 }
             } 
         }
+    }
 }
 
 bool check(state* s, int x, int y) {
+    if(s->board[y][x] == QUEEN){
+        return false;
+    }
     char* dr = {"quprmdzl"};
     for (int n = 0; n < (int)strlen(dr); n++) {
         for (int k = 1; k < SIZE; k++) {
@@ -147,5 +155,14 @@ void printboard(state* s) {
 }
 
 void test() {
-
+    state* s=calloc(1,sizeof(state));
+    s->board[2][2]=QUEEN;
+    for(int j=0;j<SIZE;j++){
+        for(int i=0;i<SIZE;i++){
+            printf("%d ",check(s,i,j));
+        }
+        printf("\n");
+    }
+    printf("\n");
+    free(s);
 }
