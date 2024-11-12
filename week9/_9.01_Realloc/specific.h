@@ -12,10 +12,10 @@ A resizeable indexed array ADT. Here:
 
 #define INITSIZE 16
 
-typedef struct{
+struct arr{
     int* a;
     int size;
-}arr;
+};
 
 /* Creates the empty array */
 arr* arr_init(void);
