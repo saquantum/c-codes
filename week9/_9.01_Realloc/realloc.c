@@ -1,4 +1,5 @@
 #include "specific.h"
+#include "../arr.h"
 
 /* Creates the empty array */
 arr* arr_init(void){
