@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include "../arr.h"
 /*
 A resizeable indexed array ADT. Here:
 1. Setting an element out of bounds reallocs the array to make it valid
