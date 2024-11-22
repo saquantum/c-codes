@@ -374,7 +374,7 @@ bool dict_addword(dict* p, const char* wd) {
     }
     p->terminal = true;
     (p->freq)++;
-    return p->freq>1;
+    return p->freq==1;
 }
 
 void __freenodes(dict* p) {
